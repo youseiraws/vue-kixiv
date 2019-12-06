@@ -9,7 +9,6 @@ const INIT_PAGE = 'INIT_PAGE'
 const ADD_PAGE = 'ADD_PAGE'
 const ADD_DATE = 'ADD_DATE'
 const SUB_DATE = 'SUB_DATE'
-const SET_DATE = 'SET_DATE'
 const CLEAR_DAILY = 'CLEAR_DAILY'
 const START_LOADING = 'START_LOADING'
 const FINISH_LOADING = 'FINISH_LOADING'
@@ -29,14 +28,12 @@ const state = {
     .format(dateFormat),
   page: 1,
   latest: {},
-
   isLoading: false,
   hasDailyLoaded: false,
 }
 
 const getters = {
   date: state => state.date,
-  latest: state => state.latest,
   daily: state => state.latest[state.date],
   isLoading: state => state.isLoading,
   isDailyEmpty: state => state.latest[state.date] === undefined,
@@ -63,7 +60,6 @@ const mutations = {
       .utc(state.date, dateFormat)
       .subtract(1, 'days')
       .format(dateFormat)),
-  [SET_DATE]: (state, date) => (state.date = date),
   [CLEAR_DAILY]: state => {
     if (state.latest[state.date] !== undefined)
       state.latest[state.date] = state.latest[state.date].splice()
@@ -88,13 +84,9 @@ const actions = {
       commit(INIT_PAGE)
     }
   },
-  [LOAD_DAILY]: async (
-    { state, getters, commit, dispatch },
-    date = state.date,
-  ) => {
+  [LOAD_DAILY]: async ({ state, getters, commit, dispatch }) => {
     if (state.isLoading) return
     commit(START_LOADING)
-    commit(SET_DATE, date)
     if (getters.isDailyEmpty || !(await dispatch(HAS_ALL_CACHED))) {
       commit(NOT_YET_DAILY_LOADED)
       commit(INIT_PAGE)
@@ -126,9 +118,8 @@ const actions = {
   },
 }
 
-export { LOAD_DAILY, PREV_DAILY, NEXT_DAILY }
-
 export default {
+  namespaced: true,
   state,
   getters,
   mutations,
