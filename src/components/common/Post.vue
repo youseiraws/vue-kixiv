@@ -1,7 +1,7 @@
 <template>
   <div id="post">
     <v-hover #default="{ hover }">
-      <v-card :raised="hover" @click="openLargerPost(post,posts)">
+      <v-card :raised="hover" @click="openLargerPost({post,posts})">
         <v-img
           :aspect-ratio="16/9"
           :src="getPostUrl(post,'sample')"
@@ -32,6 +32,7 @@ export default {
   },
   methods: {
     ...mapActions({ openLargerPost: 'OPEN_LARGER_POST' }),
+    getPostUrl: (post, postType) => getPostUrl(post, postType)
   },
 }
 </script>

@@ -2,10 +2,11 @@
   <div id="larger-post">
     <v-overlay :value="overlay">
       <v-carousel
-        v-model="i"
         class="larger-post-carousel"
+        v-model="i"
         cycle
         :continuous="false"
+        height="100%"
         hide-delimiters
         hide-delimiter-background
         show-arrows-on-hover
@@ -35,14 +36,20 @@ export default {
   name: 'LargerPost',
   data() {
     return {
-      i: this.index,
+      i: 0,
     }
   },
   computed: {
     ...mapGetters(['overlay', 'posts', 'index']),
   },
+  watch:{
+    index(newIndex){
+      this.i=newIndex
+    }
+  },
   methods: {
     ...mapActions({ closeLargerPost: 'CLOSE_LARGER_POST' }),
+    getPostUrl: (post, postType) => getPostUrl(post, postType)
   },
 }
 </script>

@@ -5,8 +5,10 @@
         <slot name="left-indicator">
           <v-btn
             v-if="isShowLeftIndicator"
+            color="black"
+            text
             icon
-            large
+            x-large
             :loading="isLoading"
             :disabled="isLoading"
             @click="$emit('left-indicator-click')"
@@ -22,8 +24,10 @@
         <slot name="right-indicator">
           <v-btn
             v-if="isShowRightIndicator"
+            color="black"
+            text
             icon
-            large
+            x-large
             :loading="isLoading"
             :disabled="isLoading"
             @click="$emit('right-indicator-click')"
@@ -60,11 +64,6 @@ export default {
 <style scoped>
 .container-card {
   width: 80vw;
-}
-
-.container-div-indicator {
-  width: 40px;
-  height: 40px;
 }
 
 .container-card-title {
