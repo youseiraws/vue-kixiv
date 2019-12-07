@@ -1,44 +1,62 @@
 <template>
-  <v-card class="container-card d-flex flex-row justify-start flex-wrap mx-auto">
-    <v-card-title class="container-card-title">
-      <div class="container-div-indicator">
-        <slot name="left-indicator">
-          <v-btn
-            v-if="isShowLeftIndicator"
-            color="black"
-            text
-            icon
-            x-large
-            :loading="isLoading"
-            :disabled="isLoading"
-            @click="$emit('left-indicator-click')"
-          >
-            <v-icon>mdi-chevron-left</v-icon>
-          </v-btn>
-        </slot>
+  <div id="container">
+    <v-card :loading="isLoading" outlined class="container-card mx-auto" min-height="100vh">
+      <v-card-title class="container-card-header d-flex flex-row justify-end">
+        <slot name="header-title"></slot>
+      </v-card-title>
+      <div class="d-flex flex-row justify-start align-start align-content-start flex-wrap">
+        <slot name="content"></slot>
       </div>
-      <h2 class="mx-auto">
-        <slot name="title"></slot>
-      </h2>
-      <div class="container-div-indicator">
-        <slot name="right-indicator">
-          <v-btn
-            v-if="isShowRightIndicator"
-            color="black"
-            text
-            icon
-            x-large
-            :loading="isLoading"
-            :disabled="isLoading"
-            @click="$emit('right-indicator-click')"
-          >
-            <v-icon>mdi-chevron-right</v-icon>
-          </v-btn>
-        </slot>
-      </div>
-    </v-card-title>
-    <slot></slot>
-  </v-card>
+      <v-card-actions class="container-card-footer">
+        <div class="container-div-indicator">
+          <slot name="footer-left-indicator">
+            <v-btn
+              v-if="isShowLeftIndicator"
+              text
+              icon
+              x-large
+              :loading="isLoading"
+              :disabled="isLoading"
+              @click="$emit('footer-left-indicator-click')"
+            >
+              <v-icon color="black">mdi-chevron-left</v-icon>
+            </v-btn>
+          </slot>
+        </div>
+        <div class="mx-auto">
+          <slot name="footer-title"></slot>
+        </div>
+        <div class="container-div-indicator">
+          <slot name="footer-right-indicator">
+            <v-btn
+              v-if="isShowRightIndicator"
+              text
+              icon
+              x-large
+              :loading="isLoading"
+              :disabled="isLoading"
+              @click="$emit('footer-right-indicator-click')"
+            >
+              <v-icon color="black">mdi-chevron-right</v-icon>
+            </v-btn>
+          </slot>
+        </div>
+      </v-card-actions>
+    </v-card>
+    <v-btn
+      fab
+      large
+      fixed
+      bottom
+      right
+      color="black"
+      :loading="isLoading"
+      :disabled="isLoading"
+      @click="$emit('refresh-click')"
+    >
+      <v-icon color="white">mdi-refresh</v-icon>
+    </v-btn>
+  </div>
 </template>
 
 <script>
@@ -66,7 +84,12 @@ export default {
   width: 80vw;
 }
 
-.container-card-title {
+.container-div-indicator {
+  width: 52px;
+}
+
+.container-card-header,
+.container-card-footer {
   width: 100%;
   height: 72px;
   text-align: center;

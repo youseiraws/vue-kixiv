@@ -1,1 +1,10 @@
 @import "./normalize.css";
+
+@font-face {
+    font-family: HuaWenXiHei;
+    src: url("../fonts/华文细黑.ttf")
+}
+
+* {
+    font-family: HuaWenXiHei;
+}

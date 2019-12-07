@@ -20,8 +20,7 @@ const getters = {
   overlay: state => state.overlay,
   post: state => state.post,
   posts: state => state.posts,
-  index: state =>
-    (state.index = state.posts.findIndex(post => post.id === state.post.id)),
+  index: state => state.posts.findIndex(post => post.id === state.post.id),
 }
 
 const mutations = {

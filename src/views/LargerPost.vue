@@ -42,14 +42,14 @@ export default {
   computed: {
     ...mapGetters(['overlay', 'posts', 'index']),
   },
-  watch:{
-    index(newIndex){
-      this.i=newIndex
-    }
+  watch: {
+    index(newIndex) {
+      this.i = newIndex
+    },
   },
   methods: {
     ...mapActions({ closeLargerPost: 'CLOSE_LARGER_POST' }),
-    getPostUrl: (post, postType) => getPostUrl(post, postType)
+    getPostUrl: (post, postType) => getPostUrl(post, postType),
   },
 }
 </script>

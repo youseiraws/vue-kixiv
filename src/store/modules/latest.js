@@ -2,14 +2,17 @@ import moment from 'moment'
 import api from '../../api'
 
 const dateFormat = 'YYYY-MM-DD'
+const urls = ['preview_url', 'sample_url', 'jpeg_url', 'file_url']
 
 /** mutations-types **/
 const ADD_POSTS = 'ADD_POSTS'
 const INIT_PAGE = 'INIT_PAGE'
 const ADD_PAGE = 'ADD_PAGE'
+const SET_DATE = 'SET_DATE'
 const ADD_DATE = 'ADD_DATE'
 const SUB_DATE = 'SUB_DATE'
 const CLEAR_DAILY = 'CLEAR_DAILY'
+const UPDATE_DAILY = 'UPDATE_DAILY'
 const START_LOADING = 'START_LOADING'
 const FINISH_LOADING = 'FINISH_LOADING'
 const ALREADY_DAILY_LOADED = 'ALREADY_DAILY_LOADED'
@@ -20,7 +23,7 @@ const REQUEST_POSTS = 'REQUEST_POSTS'
 const LOAD_DAILY = 'LOAD_DAILY'
 const PREV_DAILY = 'PREV_DAILY'
 const NEXT_DAILY = 'NEXT_DAILY'
-const HAS_ALL_CACHED = 'HAS_ALL_CACHED'
+const GET_NOT_CACHED_POSTS = 'GET_NOT_CACHED_POSTS'
 
 const state = {
   date: moment()
@@ -50,6 +53,7 @@ const mutations = {
   },
   [INIT_PAGE]: state => (state.page = 1),
   [ADD_PAGE]: state => state.page++,
+  [SET_DATE]: (state, date) => (state.date = date),
   [ADD_DATE]: state =>
     (state.date = moment
       .utc(state.date, dateFormat)
@@ -63,6 +67,16 @@ const mutations = {
   [CLEAR_DAILY]: state => {
     if (state.latest[state.date] !== undefined)
       state.latest[state.date] = state.latest[state.date].splice()
+  },
+  [UPDATE_DAILY]: (state, newPosts) => {
+    let daily = state.latest[state.date]
+    if (daily !== undefined) {
+      newPosts.forEach(newPost => {
+        const index = daily.findIndex(post => post.id === newPost.id)
+        if (index !== -1)
+          daily.splice(index, 1, Object.assign({}, daily[index], newPost))
+      })
+    }
   },
   [START_LOADING]: state => (state.isLoading = true),
   [FINISH_LOADING]: state => (state.isLoading = false),
@@ -84,15 +98,29 @@ const actions = {
       commit(INIT_PAGE)
     }
   },
-  [LOAD_DAILY]: async ({ state, getters, commit, dispatch }) => {
+  [LOAD_DAILY]: async (
+    { state, getters, commit, dispatch },
+    date = state.date,
+  ) => {
     if (state.isLoading) return
     commit(START_LOADING)
-    if (getters.isDailyEmpty || !(await dispatch(HAS_ALL_CACHED))) {
+    commit(SET_DATE, date)
+    if (getters.isDailyEmpty) {
       commit(NOT_YET_DAILY_LOADED)
       commit(INIT_PAGE)
       commit(CLEAR_DAILY)
       while (!state.hasDailyLoaded) {
         await dispatch(REQUEST_POSTS)
+      }
+    } else {
+      const notCachePosts = await dispatch(GET_NOT_CACHED_POSTS)
+      if (notCachePosts.length > 0) {
+        const result = await api.post('/cache', {
+          posts: notCachePosts,
+        })
+        if (result instanceof Array && result.length > 0) {
+          commit(UPDATE_DAILY, result)
+        }
       }
     }
     commit(FINISH_LOADING)
@@ -107,14 +135,22 @@ const actions = {
       await dispatch(LOAD_DAILY)
     }
   },
-  [HAS_ALL_CACHED]: ({ state }) => {
-    if (state.latest[state.date] === undefined) return false
-    return state.latest[state.date].every(
-      post =>
-        post.storage !== undefined &&
-        post.storage.preview_url !== undefined &&
-        post.storage.sample_url !== undefined,
-    )
+  [GET_NOT_CACHED_POSTS]: ({ state }) => {
+    const daily = state.latest[state.date]
+    if (daily === undefined) return []
+    return daily
+      .filter(
+        post =>
+          post.storage === undefined ||
+          urls.some(url => post.storage[url] === undefined),
+      )
+      .map(post =>
+        Object.assign(
+          {},
+          { id: post.id },
+          ...urls.map(url => ({ [url]: post[url] })),
+        ),
+      )
   },
 }
 
