@@ -39,7 +39,7 @@ export default {
 
 <style scoped>
 #post {
-  width: 24%;
-  margin: 6px;
+  width: 32%;
+  margin: 6px 0;
 }
 </style>

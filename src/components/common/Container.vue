@@ -4,7 +4,7 @@
       <v-card-title class="container-card-header d-flex flex-row justify-end">
         <slot name="header-title"></slot>
       </v-card-title>
-      <div class="d-flex flex-row justify-start align-start align-content-start flex-wrap">
+      <div class="d-flex flex-row justify-space-around align-start align-content-start flex-wrap">
         <slot name="content"></slot>
       </div>
       <v-card-actions class="container-card-footer">
