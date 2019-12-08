@@ -3,13 +3,13 @@
     <container
       :is-loading="isLoading"
       :is-show-left-indicator="hasNextDaily"
-      @left-indicator-click="nextDaily"
-      @right-indicator-click="prevDaily"
+      @footer-left-indicator-click="nextDaily"
+      @footer-right-indicator-click="prevDaily"
     >
       <template #content v-if="!isDailyEmpty">
         <post v-for="post in daily" :key="post.id" :post="post" :posts="daily"></post>
       </template>
-      <template #footer-title>
+      <template #header-title>
         <v-menu
           v-model="menu"
           offset-y

@@ -1,6 +1,6 @@
 <template>
   <div id="post">
-    <v-hover #default="{ hover }">
+    <v-hover #default="{hover}">
       <v-card :raised="hover" @click="openLargerPost({post,posts})">
         <v-img
           :aspect-ratio="16/9"

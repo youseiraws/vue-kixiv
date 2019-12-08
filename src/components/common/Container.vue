@@ -23,7 +23,7 @@
             </v-btn>
           </slot>
         </div>
-        <div class="mx-auto">
+        <div class="flex-grow-1">
           <slot name="footer-title"></slot>
         </div>
         <div class="container-div-indicator">
@@ -44,6 +44,7 @@
       </v-card-actions>
     </v-card>
     <v-btn
+      v-if="isShowRefresh"
       fab
       large
       fixed
@@ -72,6 +73,10 @@ export default {
       default: true,
     },
     isShowRightIndicator: {
+      type: Boolean,
+      default: true,
+    },
+    isShowRefresh: {
       type: Boolean,
       default: true,
     },

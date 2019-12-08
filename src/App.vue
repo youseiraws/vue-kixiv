@@ -1,6 +1,6 @@
 <template>
   <v-app id="app">
-    <random></random>
+    <latest></latest>
     <larger-post></larger-post>
   </v-app>
 </template>

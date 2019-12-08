@@ -65,8 +65,7 @@ const mutations = {
       .subtract(1, 'days')
       .format(dateFormat)),
   [CLEAR_DAILY]: state => {
-    if (state.latest[state.date] !== undefined)
-      state.latest[state.date] = state.latest[state.date].splice()
+    if (state.latest[state.date] !== undefined) state.latest[state.date] = []
   },
   [UPDATE_DAILY]: (state, newPosts) => {
     let daily = state.latest[state.date]
@@ -113,10 +112,10 @@ const actions = {
         await dispatch(REQUEST_POSTS)
       }
     } else {
-      const notCachePosts = await dispatch(GET_NOT_CACHED_POSTS)
-      if (notCachePosts.length > 0) {
+      const notCachedPosts = await dispatch(GET_NOT_CACHED_POSTS)
+      if (notCachedPosts.length > 0) {
         const result = await api.post('/cache', {
-          posts: notCachePosts,
+          posts: notCachedPosts,
         })
         if (result instanceof Array && result.length > 0) {
           commit(UPDATE_DAILY, result)
