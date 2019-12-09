@@ -38,8 +38,4 @@ export default {
 </script>
 
 <style scoped>
-#post {
-  width: 32%;
-  margin: 6px 0;
-}
 </style>

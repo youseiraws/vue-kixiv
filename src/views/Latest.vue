@@ -88,7 +88,7 @@ export default {
   created() {
     this.pickerDate = this.date
     this.loadDaily()
-    this.autoRefreshTimer = window.setInterval(() => this.refreshDaily(), 15000)
+    this.autoRefreshTimer = window.setInterval(() => this.refreshDaily(), 20000)
   },
   destroyed() {
     window.clearInterval(this.autoRefreshTimer)

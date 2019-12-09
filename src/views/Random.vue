@@ -38,7 +38,7 @@
         <post v-for="post in random" :key="post.id" :post="post" :posts="random"></post>
       </template>
       <template #footer-title>
-        <v-pagination v-model="pagination" :length="size" :total-visible="20" :disabled="isLoading"></v-pagination>
+        <v-pagination v-model="pagination" :length="size" :disabled="isLoading"></v-pagination>
       </template>
     </container>
   </div>
@@ -110,7 +110,7 @@ export default {
     this.loadRandom()
     this.autoRefreshTimer = window.setInterval(
       () => this.refreshRandom(),
-      15000,
+      20000,
     )
     this.debouncedSearchTag = _.debounce(search => this.searchTag(search), 1000)
     this.debouncedSearchRandom = _.debounce(

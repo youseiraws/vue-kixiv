@@ -114,6 +114,7 @@ const actions = {
     commit(SET_DATE, date)
     if (getters.isDailyEmpty) {
       commit(NOT_YET_DAILY_LOADED)
+      commit(NOT_YET_CACHED)
       commit(INIT_PAGE)
       commit(CLEAR_DAILY)
       while (!state.hasDailyLoaded) {

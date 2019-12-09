@@ -4,7 +4,7 @@
       <v-card-title class="container-card-header d-flex flex-row justify-end">
         <slot name="header-title"></slot>
       </v-card-title>
-      <div class="d-flex flex-row justify-space-around align-start align-content-start flex-wrap">
+      <div class="container-div">
         <slot name="content"></slot>
       </div>
       <v-card-actions class="container-card-footer">
@@ -87,6 +87,12 @@ export default {
 <style scoped>
 .container-card {
   width: 80vw;
+}
+
+.container-div {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-gap: 8px;
 }
 
 .container-div-indicator {
