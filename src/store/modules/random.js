@@ -23,7 +23,7 @@ const SET_ITEMS = 'SET_ITEMS'
 const START_SEARCHING = 'START_SEARCHING'
 const FINISH_SEARCHING = 'FINISH_SEARCHING'
 
-/** action-types **/
+/** actions-types **/
 const LOAD_RANDOM = 'LOAD_RANDOM'
 const PREV_RANDOM = 'PREV_RANDOM'
 const NEXT_RANDOM = 'NEXT_RANDOM'
@@ -93,7 +93,7 @@ const mutations = {
 
 const actions = {
   [LOAD_RANDOM]: async (
-    { state, commit, getters, dispatch },
+    { state, getters, commit, dispatch },
     page = state.page,
   ) => {
     if (state.isLoading) return
@@ -172,9 +172,7 @@ const actions = {
       limit: 7,
       name,
     })
-    if (!_.isEmpty(result)) {
-      commit(SET_ITEMS, result)
-    }
+    if (!_.isEmpty(result)) commit(SET_ITEMS, result)
     commit(FINISH_SEARCHING)
   },
 }

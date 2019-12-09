@@ -3,8 +3,10 @@
     <container
       :is-loading="isLoading"
       :is-show-left-indicator="hasNextDaily"
+      :is-show-refresh="!hasCached"
       @footer-left-indicator-click="nextDaily"
       @footer-right-indicator-click="prevDaily"
+      @refresh-click="refreshDaily"
     >
       <template #content v-if="!isDailyEmpty">
         <post v-for="post in daily" :key="post.id" :post="post" :posts="daily"></post>
@@ -53,6 +55,7 @@ export default {
         .utc()
         .format(dateFormat),
       menu: false,
+      autoRefreshTimer: null,
     }
   },
   computed: {
@@ -62,6 +65,7 @@ export default {
       'isLoading',
       'isDailyEmpty',
       'hasNextDaily',
+      'hasCached',
     ]),
   },
   watch: {
@@ -78,11 +82,16 @@ export default {
       loadDaily: 'LOAD_DAILY',
       prevDaily: 'PREV_DAILY',
       nextDaily: 'NEXT_DAILY',
+      refreshDaily: 'REFRESH_DAILY',
     }),
   },
   created() {
     this.pickerDate = this.date
     this.loadDaily()
+    this.autoRefreshTimer = window.setInterval(() => this.refreshDaily(), 15000)
+  },
+  destroyed() {
+    window.clearInterval(this.autoRefreshTimer)
   },
 }
 </script>

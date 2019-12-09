@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import moment from 'moment'
 import api from '../../api'
 
@@ -17,12 +18,15 @@ const START_LOADING = 'START_LOADING'
 const FINISH_LOADING = 'FINISH_LOADING'
 const ALREADY_DAILY_LOADED = 'ALREADY_DAILY_LOADED'
 const NOT_YET_DAILY_LOADED = 'NOT_YET_DAILY_LOADED'
+const ALREADY_CACHED = 'ALREADY_CACHED'
+const NOT_YET_CACHED = 'NOT_YET_CACHED'
 
-/** action-types **/
+/** actions-types **/
 const REQUEST_POSTS = 'REQUEST_POSTS'
 const LOAD_DAILY = 'LOAD_DAILY'
 const PREV_DAILY = 'PREV_DAILY'
 const NEXT_DAILY = 'NEXT_DAILY'
+const REFRESH_DAILY = 'REFRESH_DAILY'
 const GET_NOT_CACHED_POSTS = 'GET_NOT_CACHED_POSTS'
 
 const state = {
@@ -33,6 +37,7 @@ const state = {
   latest: {},
   isLoading: false,
   hasDailyLoaded: false,
+  hasCached: false,
 }
 
 const getters = {
@@ -43,6 +48,7 @@ const getters = {
   isLatestEmpty: state => Object.keys(state.latest).length === 0,
   hasNextDaily: state =>
     moment.utc(state.date, dateFormat).isBefore(moment.utc(), 'day'),
+  hasCached: state => state.hasCached,
 }
 
 const mutations = {
@@ -81,6 +87,8 @@ const mutations = {
   [FINISH_LOADING]: state => (state.isLoading = false),
   [ALREADY_DAILY_LOADED]: state => (state.hasDailyLoaded = true),
   [NOT_YET_DAILY_LOADED]: state => (state.hasDailyLoaded = false),
+  [ALREADY_CACHED]: state => (state.hasCached = true),
+  [NOT_YET_CACHED]: state => (state.hasCached = false),
 }
 
 const actions = {
@@ -89,7 +97,7 @@ const actions = {
       tags: `date:${state.date}`,
       page: state.page,
     })
-    if (result instanceof Array && result.length > 0) {
+    if (!_.isEmpty(result)) {
       commit(ADD_POSTS, result)
       commit(ADD_PAGE)
     } else {
@@ -113,14 +121,13 @@ const actions = {
       }
     } else {
       const notCachedPosts = await dispatch(GET_NOT_CACHED_POSTS)
-      if (notCachedPosts.length > 0) {
+      if (!_.isEmpty(notCachedPosts)) {
+        commit(NOT_YET_CACHED)
         const result = await api.post('/cache', {
           posts: notCachedPosts,
         })
-        if (result instanceof Array && result.length > 0) {
-          commit(UPDATE_DAILY, result)
-        }
-      }
+        if (!_.isEmpty(result)) commit(UPDATE_DAILY, result)
+      } else commit(ALREADY_CACHED)
     }
     commit(FINISH_LOADING)
   },
@@ -133,6 +140,9 @@ const actions = {
       commit(ADD_DATE)
       await dispatch(LOAD_DAILY)
     }
+  },
+  [REFRESH_DAILY]: async ({ state, dispatch }) => {
+    if (!state.hasCached) await dispatch(LOAD_DAILY)
   },
   [GET_NOT_CACHED_POSTS]: ({ state }) => {
     const daily = state.latest[state.date]
