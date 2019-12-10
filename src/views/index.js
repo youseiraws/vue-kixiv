@@ -1,5 +1,6 @@
-import Latest from './Latest'
 import LargerPost from './LargerPost'
+import Latest from './Latest'
 import Random from './Random'
+import Category from './Category'
 
-export { Latest, LargerPost, Random }
+export { LargerPost, Latest, Random, Category }

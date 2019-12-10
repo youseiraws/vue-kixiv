@@ -6,11 +6,11 @@
 </template>
 
 <script>
-import { Latest, LargerPost, Random } from './views'
+import { LargerPost, Latest, Random, Category } from './views'
 
 export default {
   name: 'App',
-  components: { Latest, LargerPost, Random },
+  components: { LargerPost, Latest, Random, Category },
 }
 </script>
 

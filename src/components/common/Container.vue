@@ -4,7 +4,7 @@
       <v-card-title class="container-card-header d-flex flex-row justify-end">
         <slot name="header-title"></slot>
       </v-card-title>
-      <div class="container-div">
+      <div class="container-div" :style="containerDivStyle">
         <slot name="content"></slot>
       </div>
       <v-card-actions class="container-card-footer">
@@ -64,6 +64,14 @@
 export default {
   name: 'Container',
   props: {
+    columns: {
+      type: Number,
+      default: 4,
+    },
+    gap: {
+      type: Number,
+      default: 8,
+    },
     isLoading: {
       type: Boolean,
       default: false,
@@ -81,18 +89,25 @@ export default {
       default: true,
     },
   },
+  computed: {
+    containerDivStyle() {
+      return {
+        'grid-template-columns': `repeat(${this.columns}, 1fr)`,
+        'grid-gap': `${this.gap}px`,
+      }
+    },
+  },
 }
 </script>
 
 <style scoped>
 .container-card {
   width: 80vw;
+  border: none !important;
 }
 
 .container-div {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-gap: 8px;
 }
 
 .container-div-indicator {

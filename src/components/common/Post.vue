@@ -3,6 +3,7 @@
     <v-hover #default="{hover}">
       <v-card :raised="hover" @click="openLargerPost({post,posts})">
         <v-img
+          :width="size"
           :aspect-ratio="16/9"
           :src="getPostUrl(post,'sample')"
           :lazy-src="getPostUrl(post,'preview')"
@@ -21,18 +22,27 @@ const { mapActions } = createNamespacedHelpers('largerPost')
 export default {
   name: 'Post',
   props: {
+    size: {
+      type: Number,
+    },
     post: {
       type: Object,
-      default: () => ({}),
+      default() {
+        return {}
+      },
     },
     posts: {
       type: Array,
-      default: () => [],
+      default() {
+        return []
+      },
     },
   },
   methods: {
     ...mapActions({ openLargerPost: 'OPEN_LARGER_POST' }),
-    getPostUrl: (post, postType) => getPostUrl(post, postType),
+    getPostUrl(post, postType) {
+      return getPostUrl(post, postType)
+    },
   },
 }
 </script>

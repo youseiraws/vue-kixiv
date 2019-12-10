@@ -35,7 +35,7 @@
         </div>
       </template>
       <template #content v-if="!isRandomEmpty">
-        <post v-for="post in random" :key="post.id" :post="post" :posts="random"></post>
+        <post v-for="post in random" :key="post.id" :size="301" :post="post" :posts="random"></post>
       </template>
       <template #footer-title>
         <v-pagination v-model="pagination" :length="size" :disabled="isLoading"></v-pagination>

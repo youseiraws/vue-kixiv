@@ -9,7 +9,7 @@
       @refresh-click="refreshDaily"
     >
       <template #content v-if="!isDailyEmpty">
-        <post v-for="post in daily" :key="post.id" :post="post" :posts="daily"></post>
+        <post v-for="post in daily" :key="post.id" :size="301" :post="post" :posts="daily"></post>
       </template>
       <template #header-title>
         <v-menu

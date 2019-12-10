@@ -36,7 +36,7 @@ const GET_NOT_CACHED_POSTS = 'GET_NOT_CACHED_POSTS'
 const state = {
   page: 1,
   name: '',
-  tags: [],
+  totalTags: [],
   categories: {},
   isSearching: false,
   hasSearched: false,
@@ -48,12 +48,16 @@ const state = {
 const getters = {
   page: state => state.page,
   index: state => state.page - 1,
-  size: state => state.tags.length,
-  isTagEmpty: (state, getters) => _.isEmpty(state.tags[getters.index]),
+  size: state => state.totalTags.length,
+  tags: (state, getters) => state.totalTags[getters.index],
+  categories: state => state.categories,
+  isSearching: state => state.isSearching,
+  isTagEmpty: (state, getters) => _.isEmpty(state.totalTags[getters.index]),
   hasPrevPage: state => state.page > 1,
   hasNextPage: (state, getters) =>
     !state.hasSearched || state.page < getters.size,
   hasCached: state => state.hasCached,
+  isCaching: state => state.isCaching,
 }
 
 const mutations = {
@@ -61,21 +65,21 @@ const mutations = {
   [ADD_PAGE]: state => state.page++,
   [SUB_PAGE]: state => state.page--,
   [SET_NAME]: (state, name) => (state.name = name),
-  [ADD_TAG]: (state, tag) => state.tags.push(tag),
-  [CLEAR_TAGS]: state => (state.tags = []),
+  [ADD_TAG]: (state, tag) => state.totalTags.push(tag),
+  [CLEAR_TAGS]: state => (state.totalTags = []),
   [ADD_COVER]: (state, payload) => {
     if (state.categories[payload.tag] === undefined)
       state.categories[payload.tag] = payload.post
   },
   [UPDATE_COVER]: (state, newPosts) => {
     newPosts.forEach(newPost => {
-      const origin = Object.entries(state.categories).find(
+      const oldPost = Object.entries(state.categories).find(
         ([tag, post]) => post.id === newPost.id,
       )
-      if (origin !== undefined)
-        state.categories[origin[0]] = Object.assign(
+      if (oldPost !== undefined)
+        state.categories[oldPost[0]] = Object.assign(
           {},
-          state.categories[origin[0]],
+          state.categories[oldPost[0]],
           newPost,
         )
     })
@@ -98,6 +102,7 @@ const actions = {
     commit(START_SEARCHING)
     if (getters.isTagEmpty) {
       commit(NOT_YET_SEARCHED)
+      commit(NOT_YET_CACHED)
       const result = await api.get('/tag', {
         order: 'count',
         page: state.page,
@@ -133,14 +138,14 @@ const actions = {
     if (state.isLoading) return
     commit(START_LOADING)
     while (true) {
-      let noCoverTag
-      for (tag of state.tags) {
+      let noCoverTag = {}
+      for (let tag of state.totalTags.flat()) {
         if (state.categories[tag.name] === undefined) {
           noCoverTag = tag
           break
         }
       }
-      if (noCoverTag !== undefined) {
+      if (!_.isEmpty(noCoverTag)) {
         const result = await api.get('/random', {
           limit: 1,
           tags: noCoverTag.name,
@@ -168,11 +173,11 @@ const actions = {
     commit(FINISH_CACHING)
   },
   [REFRESH_CATEGORY]: async ({ state, dispatch }) => {
-    if (!state.hasCached) await dispatch(CACHE_COVER)
+    await dispatch(CACHE_COVER)
   },
   [GET_NOT_CACHED_POSTS]: ({ state }) => {
     if (_.isEmpty(state.categories)) return
-    Object.values(state.categories)
+    return Object.values(state.categories)
       .filter(
         post =>
           post.storage === undefined ||

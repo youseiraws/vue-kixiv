@@ -1,5 +1,7 @@
+import _ from 'lodash'
+
 function getPostUrl(post, postType) {
-  if (post === null) return
+  if (_.isEmpty(post)) return
   if (
     post.storage === undefined ||
     post.storage[`${postType}_url`] === undefined
