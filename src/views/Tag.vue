@@ -2,13 +2,17 @@
   <div id="tag">
     <container
       :is-loading="isLoading"
-      :is-show-left-indicator="hasPrevPage"
-      :is-show-right-indicator="hasNextPage"
+      :is-show-header-left-indicator="true"
+      :is-show-footer-left-indicator="hasPrevPage"
+      :is-show-footer-right-indicator="hasNextPage"
       :is-show-refresh="!hasCached"
       @footer-left-indicator-click="prevTag"
       @footer-right-indicator-click="nextTag"
       @refresh-click="refreshTag"
     >
+      <template #header-title>
+        <v-chip label outlined>{{name}}</v-chip>
+      </template>
       <template #content v-if="!isTagEmpty">
         <post v-for="post in tag" :key="post.id" :size="301" :post="post" :posts="tag"></post>
       </template>
@@ -66,19 +70,23 @@ export default {
   },
   methods: {
     ...mapActions({
+      initState: 'INIT_STATE',
       loadTag: 'LOAD_TAG',
       prevTag: 'PREV_TAG',
       nextTag: 'NEXT_TAG',
       refreshTag: 'REFRESH_TAG',
     }),
   },
-  created() {
-    this.pagination = this.page
-    this.loadTag({ name: this.name })
-    this.autoRefreshTimer = window.setInterval(() => this.refreshTag(), 20000)
+  beforeRouteEnter(to, from, next) {
+    next(vm => {
+      vm.initState()
+      vm.loadTag({ name: to.params.name })
+      vm.autoRefreshTimer = window.setInterval(() => vm.refreshTag(), 20000)
+    })
   },
-  destroyed() {
+  beforeRouteLeave(to, from, next) {
     window.clearInterval(this.autoRefreshTimer)
+    next()
   },
 }
 </script>

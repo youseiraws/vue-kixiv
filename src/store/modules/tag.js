@@ -9,8 +9,10 @@ const INIT_PAGE = 'INIT_PAGE'
 const SET_PAGE = 'SET_PAGE'
 const ADD_PAGE = 'ADD_PAGE'
 const SUB_PAGE = 'SUB_PAGE'
+const INIT_NAME = 'INIT_NAME'
 const SET_NAME = 'SET_NAME'
 const UPDATE_TAG = 'UPDATE_TAG'
+const CLEAR_TAGS = 'CLEAR_TAGS'
 const START_LOADING = 'START_LOADING'
 const FINISH_LOADING = 'FINISH_LOADING'
 const ALREADY_LOADED = 'ALREADY_LOADED'
@@ -19,6 +21,7 @@ const ALREADY_CACHED = 'ALREADY_CACHED'
 const NOT_YET_CACHED = 'NOT_YET_CACHED'
 
 /** actions-types **/
+const INIT_STATE = 'INIT_STATE'
 const LOAD_TAG = 'LOAD_TAG'
 const PREV_TAG = 'PREV_TAG'
 const NEXT_TAG = 'NEXT_TAG'
@@ -53,6 +56,7 @@ const mutations = {
   [SET_PAGE]: (state, page) => (state.page = page),
   [ADD_PAGE]: state => state.page++,
   [SUB_PAGE]: state => state.page--,
+  [INIT_NAME]: state => (state.name = ''),
   [SET_NAME]: (state, name) => (state.name = name),
   [UPDATE_TAG]: (state, newPosts) => {
     let tag = state.tags[state.page - 1]
@@ -64,6 +68,7 @@ const mutations = {
       })
     }
   },
+  [CLEAR_TAGS]: state => (state.tags = []),
   [START_LOADING]: state => (state.isLoading = true),
   [FINISH_LOADING]: state => (state.isLoading = false),
   [ALREADY_LOADED]: state => (state.hasLoaded = true),
@@ -73,9 +78,17 @@ const mutations = {
 }
 
 const actions = {
+  [INIT_STATE]: ({ commit }) => {
+    commit(INIT_PAGE)
+    commit(INIT_NAME)
+    commit(CLEAR_TAGS)
+    commit(FINISH_LOADING)
+    commit(NOT_YET_LOADED)
+    commit(NOT_YET_CACHED)
+  },
   [LOAD_TAG]: async (
     { state, getters, commit, dispatch },
-    { page = state.page, name = state.name },
+    { page = state.page, name = state.name } = {},
   ) => {
     if (state.isLoading) return
     commit(START_LOADING)

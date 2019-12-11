@@ -1,7 +1,7 @@
 <template>
   <div id="post">
     <v-hover #default="{hover}">
-      <v-card :raised="hover" @click="openLargerPost({post,posts})">
+      <v-card :raised="hover" @click="openLarger({post,posts})">
         <v-img
           :width="size"
           :aspect-ratio="16/9"
@@ -17,7 +17,7 @@
 import { createNamespacedHelpers } from 'vuex'
 import { getPostUrl } from '../../util/util'
 
-const { mapActions } = createNamespacedHelpers('largerPost')
+const { mapActions } = createNamespacedHelpers('larger')
 
 export default {
   name: 'Post',
@@ -39,7 +39,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions({ openLargerPost: 'OPEN_LARGER_POST' }),
+    ...mapActions({ openLarger: 'OPEN_LARGER' }),
     getPostUrl(post, postType) {
       return getPostUrl(post, postType)
     },

@@ -2,14 +2,14 @@
   <div id="random">
     <container
       :is-loading="isLoading"
-      :is-show-left-indicator="hasPrevPage"
-      :is-show-right-indicator="hasNextPage"
+      :is-show-footer-left-indicator="hasPrevPage"
+      :is-show-footer-right-indicator="hasNextPage"
       :is-show-refresh="!hasCached"
       @footer-left-indicator-click="prevRandom"
       @footer-right-indicator-click="nextRandom"
       @refresh-click="refreshRandom"
     >
-      <template #header-title>
+      <template #header-action>
         <div>
           <v-autocomplete
             v-model="select"
@@ -106,7 +106,6 @@ export default {
     }),
   },
   created() {
-    this.pagination = this.page
     this.loadRandom()
     this.autoRefreshTimer = window.setInterval(
       () => this.refreshRandom(),

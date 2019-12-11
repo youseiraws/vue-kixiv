@@ -3,6 +3,7 @@
     <v-hover #default="{hover}">
       <v-card class="cover-card" :raised="hover" @click="$emit('cover-click',name)">
         <v-img
+          class="cover-img"
           :width="size"
           :aspect-ratio="1"
           :src="getPostUrl(cover,'sample')"
@@ -47,6 +48,10 @@ export default {
 .cover-card {
   cursor: pointer;
   user-select: none;
+  border-radius: 50% !important;
+}
+
+.cover-img {
   border-radius: 50% !important;
 }
 </style>

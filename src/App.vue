@@ -1,16 +1,16 @@
 <template>
   <v-app id="app">
-    <random></random>
-    <larger-post></larger-post>
+    <home></home>
+    <larger></larger>
   </v-app>
 </template>
 
 <script>
-import { LargerPost, Latest, Random, Category } from './views'
+import { Home, Larger } from './views'
 
 export default {
   name: 'App',
-  components: { LargerPost, Latest, Random, Category },
+  components: { Home, Larger },
 }
 </script>
 

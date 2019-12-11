@@ -10,6 +10,7 @@ const ADD_PAGE = 'ADD_PAGE'
 const SUB_PAGE = 'SUB_PAGE'
 const SET_NAME = 'SET_NAME'
 const ADD_TAG = 'ADD_TAG'
+const REMOVE_TAG = 'REMOVE_TAG'
 const CLEAR_TAGS = 'CLEAR_TAGS'
 const ADD_COVER = 'ADD_COVER'
 const UPDATE_COVER = 'UPDATE_COVER'
@@ -67,7 +68,11 @@ const mutations = {
   [ADD_PAGE]: state => state.page++,
   [SUB_PAGE]: state => state.page--,
   [SET_NAME]: (state, name) => (state.name = name),
-  [ADD_TAG]: (state, tag) => state.totalTags.push(tag),
+  [ADD_TAG]: (state, tags) => state.totalTags.push(tags),
+  [REMOVE_TAG]: (state, removedTag) =>
+    state.totalTags.forEach(tags =>
+      _.remove(tags, tag => _.isEqual(tag, removedTag)),
+    ),
   [CLEAR_TAGS]: state => (state.totalTags = []),
   [ADD_COVER]: (state, payload) => {
     if (state.categories[payload.tag] === undefined)
@@ -113,8 +118,9 @@ const actions = {
         page: state.page,
         name: state.name,
       })
-      if (!_.isEmpty(result)) {
-        commit(ADD_TAG, result)
+      const tags = result.filter(tag => tag.count > 0)
+      if (!_.isEmpty(tags)) {
+        commit(ADD_TAG, tags)
         dispatch(LOAD_COVER)
       } else commit(ALREADY_SEARCHED)
     }
@@ -159,6 +165,7 @@ const actions = {
             tag: noCoverTag.name,
             post: result[0],
           })
+        else commit(REMOVE_TAG, noCoverTag)
         commit(NOT_YET_CACHED)
       } else break
     }

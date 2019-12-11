@@ -1,8 +1,24 @@
 <template>
   <div id="container">
-    <v-card :loading="isLoading" outlined class="container-card mx-auto" min-height="100vh">
-      <v-card-title class="container-card-header d-flex flex-row justify-end">
+    <v-card :loading="isLoading" outlined class="container-card mx-auto">
+      <v-card-title class="container-card-header d-flex flex-row">
+        <div class="container-div-indicator">
+          <slot name="header-left-indicator">
+            <v-btn
+              v-if="isShowHeaderLeftIndicator"
+              text
+              icon
+              large
+              :disabled="isLoading"
+              @click="back"
+            >
+              <v-icon color="black">mdi-arrow-left</v-icon>
+            </v-btn>
+          </slot>
+        </div>
         <slot name="header-title"></slot>
+        <v-spacer></v-spacer>
+        <slot name="header-action"></slot>
       </v-card-title>
       <div class="container-div" :style="containerDivStyle">
         <slot name="content"></slot>
@@ -11,7 +27,7 @@
         <div class="container-div-indicator">
           <slot name="footer-left-indicator">
             <v-btn
-              v-if="isShowLeftIndicator"
+              v-if="isShowFooterLeftIndicator"
               text
               icon
               x-large
@@ -29,7 +45,7 @@
         <div class="container-div-indicator">
           <slot name="footer-right-indicator">
             <v-btn
-              v-if="isShowRightIndicator"
+              v-if="isShowFooterRightIndicator"
               text
               icon
               x-large
@@ -76,11 +92,15 @@ export default {
       type: Boolean,
       default: false,
     },
-    isShowLeftIndicator: {
+    isShowHeaderLeftIndicator: {
+      type: Boolean,
+      default: false,
+    },
+    isShowFooterLeftIndicator: {
       type: Boolean,
       default: true,
     },
-    isShowRightIndicator: {
+    isShowFooterRightIndicator: {
       type: Boolean,
       default: true,
     },
@@ -95,6 +115,11 @@ export default {
         'grid-template-columns': `repeat(${this.columns}, 1fr)`,
         'grid-gap': `${this.gap}px`,
       }
+    },
+  },
+  methods: {
+    back() {
+      this.$router.go(-1)
     },
   },
 }
@@ -117,7 +142,6 @@ export default {
 .container-card-header,
 .container-card-footer {
   width: 100%;
-  height: 72px;
   text-align: center;
 }
 </style>

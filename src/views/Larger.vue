@@ -1,9 +1,9 @@
 <template>
-  <div id="larger-post">
-    <v-overlay :value="overlay">
+  <div id="larger">
+    <v-overlay class="larger-overlay" :value="overlay">
       <v-hover #default="{hover}">
         <v-carousel
-          class="larger-post-carousel"
+          class="larger-carousel"
           v-model="i"
           :cycle="!hover"
           :continuous="false"
@@ -18,7 +18,7 @@
                 :aspect-ratio="16/9"
                 :src="getPostUrl(post,'file')"
                 :lazy-src="getPostUrl(post,'jpeg')"
-                @click="closeLargerPost"
+                @click="closeLarger"
               ></v-img>
             </v-card>
           </v-carousel-item>
@@ -32,10 +32,10 @@
 import { createNamespacedHelpers } from 'vuex'
 import { getPostUrl } from '../util/util'
 
-const { mapGetters, mapActions } = createNamespacedHelpers('largerPost')
+const { mapGetters, mapActions } = createNamespacedHelpers('larger')
 
 export default {
-  name: 'LargerPost',
+  name: 'Larger',
   data() {
     return {
       i: 0,
@@ -50,7 +50,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions({ closeLargerPost: 'CLOSE_LARGER_POST' }),
+    ...mapActions({ closeLarger: 'CLOSE_LARGER' }),
     getPostUrl(post, postType) {
       return getPostUrl(post, postType)
     },
@@ -59,7 +59,7 @@ export default {
 </script>
 
 <style scoped>
-.larger-post-carousel {
+.larger-carousel {
   width: 84vw;
 }
 </style>

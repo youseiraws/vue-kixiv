@@ -2,7 +2,7 @@
   <div id="latest">
     <container
       :is-loading="isLoading"
-      :is-show-left-indicator="hasNextDaily"
+      :is-show-footer-left-indicator="hasNextDaily"
       :is-show-refresh="!hasCached"
       @footer-left-indicator-click="nextDaily"
       @footer-right-indicator-click="prevDaily"
@@ -11,7 +11,7 @@
       <template #content v-if="!isDailyEmpty">
         <post v-for="post in daily" :key="post.id" :size="301" :post="post" :posts="daily"></post>
       </template>
-      <template #header-title>
+      <template #header-action>
         <v-menu
           v-model="menu"
           offset-y
@@ -86,7 +86,6 @@ export default {
     }),
   },
   created() {
-    this.pickerDate = this.date
     this.loadDaily()
     this.autoRefreshTimer = window.setInterval(() => this.refreshDaily(), 20000)
   },
