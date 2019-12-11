@@ -1,5 +1,5 @@
 import Container from './Container'
 import Post from './Post'
-import Tag from './Tag'
+import Cover from './Cover'
 
-export { Container, Post, Tag }
+export { Container, Post, Cover }

@@ -1,7 +1,7 @@
 <template>
-  <div id="tag">
+  <div id="cover">
     <v-hover #default="{hover}">
-      <v-card :raised="hover" class="tag-card">
+      <v-card class="cover-card" :raised="hover" @click="$emit('cover-click',name)">
         <v-img
           :width="size"
           :aspect-ratio="1"
@@ -19,7 +19,7 @@
 import { getPostUrl } from '../../util/util'
 
 export default {
-  name: 'Tag',
+  name: 'Cover',
   props: {
     size: {
       type: Number,
@@ -43,8 +43,8 @@ export default {
 }
 </script>
 
-<style>
-.tag-card {
+<style scoped>
+.cover-card {
   cursor: pointer;
   user-select: none;
   border-radius: 50% !important;

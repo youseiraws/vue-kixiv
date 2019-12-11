@@ -6,19 +6,28 @@
       :is-loading="isSearching||isCaching"
       :is-show-left-indicator="hasPrevPage"
       :is-show-right-indicator="hasNextPage"
-      :is-show-refresh="true"
+      :is-show-refresh="!hasCached"
       @footer-left-indicator-click="prevTag"
       @footer-right-indicator-click="nextTag"
       @refresh-click="refreshCategory"
     >
+      <template #header-title>
+        <div>
+          <v-text-field v-model="name" dense single-line rounded outlined></v-text-field>
+        </div>
+      </template>
       <template #content v-if="!isTagEmpty">
-        <tag
+        <cover
           v-for="tag in tags"
           :key="tag.id"
           :size="194"
           :name="tag.name"
           :cover="categories[tag.name]"
-        ></tag>
+          @cover-click="coverClick"
+        ></cover>
+      </template>
+      <template #footer-title>
+        <v-pagination v-model="pagination" :length="size" :disabled="isSearching||isCaching"></v-pagination>
       </template>
     </container>
   </div>
@@ -26,7 +35,8 @@
 
 <script>
 import { createNamespacedHelpers } from 'vuex'
-import { Container, Tag } from '../components/common'
+import _ from 'lodash'
+import { Container, Cover } from '../components/common'
 
 const { mapGetters, mapActions } = createNamespacedHelpers('category')
 
@@ -34,11 +44,14 @@ export default {
   name: 'Category',
   components: {
     Container,
-    Tag,
+    Cover,
   },
   data() {
     return {
+      pagination: 1,
+      name: '',
       autoRefreshTimer: null,
+      debouncedSearchTag: null,
     }
   },
   computed: {
@@ -55,6 +68,17 @@ export default {
       'isCaching',
     ]),
   },
+  watch: {
+    pagination(newPagination) {
+      this.loadTag(newPagination)
+    },
+    page(newPage) {
+      this.pagination = newPage
+    },
+    name(newName) {
+      this.debouncedSearchTag(newName)
+    },
+  },
   methods: {
     ...mapActions({
       loadTag: 'LOAD_TAG',
@@ -63,6 +87,7 @@ export default {
       searchTag: 'SEARCH_TAG',
       refreshCategory: 'REFRESH_CATEGORY',
     }),
+    coverClick(name) {},
   },
   created() {
     this.loadTag()
@@ -70,12 +95,22 @@ export default {
       () => this.refreshCategory(),
       10000,
     )
+    this.debouncedSearchTag = _.debounce(search => this.searchTag(search), 1000)
   },
   destroyed() {
     window.clearInterval(this.autoRefreshTimer)
+    this.debouncedSearchTag.cancel()
   },
 }
 </script>
 
-<style scoped>
+<style lang="scss">
+#category {
+  .v-pagination li {
+    &:first-child,
+    &:last-child {
+      display: none;
+    }
+  }
+}
 </style>

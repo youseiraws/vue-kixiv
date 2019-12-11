@@ -5,6 +5,7 @@ const urls = ['preview_url', 'sample_url']
 
 /** mutations-types **/
 const INIT_PAGE = 'INIT_PAGE'
+const SET_PAGE = 'SET_PAGE'
 const ADD_PAGE = 'ADD_PAGE'
 const SUB_PAGE = 'SUB_PAGE'
 const SET_NAME = 'SET_NAME'
@@ -62,6 +63,7 @@ const getters = {
 
 const mutations = {
   [INIT_PAGE]: state => (state.page = 1),
+  [SET_PAGE]: (state, page) => (state.page = page),
   [ADD_PAGE]: state => state.page++,
   [SUB_PAGE]: state => state.page--,
   [SET_NAME]: (state, name) => (state.name = name),
@@ -97,12 +99,15 @@ const mutations = {
 }
 
 const actions = {
-  [LOAD_TAG]: async ({ state, getters, commit, dispatch }) => {
+  [LOAD_TAG]: async (
+    { state, getters, commit, dispatch },
+    page = state.page,
+  ) => {
     if (state.isSearching) return
     commit(START_SEARCHING)
+    commit(SET_PAGE, page)
     if (getters.isTagEmpty) {
       commit(NOT_YET_SEARCHED)
-      commit(NOT_YET_CACHED)
       const result = await api.get('/tag', {
         order: 'count',
         page: state.page,
@@ -146,8 +151,7 @@ const actions = {
         }
       }
       if (!_.isEmpty(noCoverTag)) {
-        const result = await api.get('/random', {
-          limit: 1,
+        const result = await api.get('/cover', {
           tags: noCoverTag.name,
         })
         if (!_.isEmpty(result))
@@ -155,6 +159,7 @@ const actions = {
             tag: noCoverTag.name,
             post: result[0],
           })
+        commit(NOT_YET_CACHED)
       } else break
     }
     commit(FINISH_LOADING)
@@ -173,7 +178,7 @@ const actions = {
     commit(FINISH_CACHING)
   },
   [REFRESH_CATEGORY]: async ({ state, dispatch }) => {
-    await dispatch(CACHE_COVER)
+    if (!state.hasCached) await dispatch(CACHE_COVER)
   },
   [GET_NOT_CACHED_POSTS]: ({ state }) => {
     if (_.isEmpty(state.categories)) return
