@@ -13,6 +13,25 @@
     >
       <template #header-action>
         <div>
+          <v-menu offset-y transition="scroll-y-transition" :disabled="isLoading">
+            <template v-slot:activator="{on}">
+              <v-btn text x-large v-on="on" :disabled="isLoading"></v-btn>
+            </template>
+            <template>
+              <v-list flat>
+                <v-list-item-group v-model="tagType" mandatory>
+                  <v-list-item
+                    v-for="tagType in tagTypes"
+                    :key="tagType.value"
+                    :value="tagType.value"
+                    :color="tagType.color"
+                  >
+                    <v-list-item-title>{{tagType.name}}</v-list-item-title>
+                  </v-list-item>
+                </v-list-item-group>
+              </v-list>
+            </template>
+          </v-menu>
           <v-text-field v-model="keyword" dense single-line rounded outlined></v-text-field>
         </div>
       </template>
@@ -48,6 +67,44 @@ export default {
   },
   data() {
     return {
+      tagTypes: [
+        {
+          name: 'any',
+          value: '',
+          color: '#000000',
+        },
+        {
+          name: 'general',
+          value: 0,
+          color: '#ffaaae',
+        },
+        {
+          name: 'artist',
+          value: 1,
+          color: '#cccc00',
+        },
+        {
+          name: 'copyright',
+          value: 3,
+          color: '#dd00dd',
+        },
+        {
+          name: 'character',
+          value: 4,
+          color: '#00aa00',
+        },
+        {
+          name: 'style',
+          value: 5,
+          color: '#ff2020',
+        },
+        {
+          name: 'circle',
+          value: 6,
+          color: '#00bbbb',
+        },
+      ],
+      tagType: '',
       pagination: 1,
       keyword: '',
       autoRefreshTimer: null,
@@ -59,6 +116,7 @@ export default {
       'page',
       'size',
       'name',
+      'type',
       'tags',
       'categories',
       'isSearching',
@@ -79,6 +137,9 @@ export default {
     keyword(newKeyword) {
       this.debouncedSearchTag(newKeyword)
     },
+    tagType(newTagType) {
+      this.searchTag({ type: newTagType })
+    },
   },
   methods: {
     ...mapActions({
@@ -98,7 +159,10 @@ export default {
       () => this.refreshCategory(),
       10000,
     )
-    this.debouncedSearchTag = _.debounce(search => this.searchTag(search), 1000)
+    this.debouncedSearchTag = _.debounce(
+      search => this.searchTag({ name: search }),
+      1000,
+    )
   },
   destroyed() {
     window.clearInterval(this.autoRefreshTimer)
@@ -107,6 +171,7 @@ export default {
   beforeRouteEnter(to, from, next) {
     next(vm => {
       vm.keyword = vm.name
+      vm.tagType = vm.type
     })
   },
 }

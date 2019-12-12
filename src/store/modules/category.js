@@ -9,6 +9,7 @@ const SET_PAGE = 'SET_PAGE'
 const ADD_PAGE = 'ADD_PAGE'
 const SUB_PAGE = 'SUB_PAGE'
 const SET_NAME = 'SET_NAME'
+const SET_TYPE = 'SET_TYPE'
 const ADD_TAG = 'ADD_TAG'
 const REMOVE_TAG = 'REMOVE_TAG'
 const CLEAR_TAGS = 'CLEAR_TAGS'
@@ -38,6 +39,7 @@ const GET_NOT_CACHED_POSTS = 'GET_NOT_CACHED_POSTS'
 const state = {
   page: 1,
   name: '',
+  type: '',
   totalTags: [],
   categories: {},
   isSearching: false,
@@ -52,6 +54,7 @@ const getters = {
   index: state => state.page - 1,
   size: state => state.totalTags.length,
   name: state => state.name,
+  type: state => state.type,
   tags: (state, getters) => state.totalTags[getters.index],
   categories: state => state.categories,
   isSearching: state => state.isSearching,
@@ -69,6 +72,7 @@ const mutations = {
   [ADD_PAGE]: state => state.page++,
   [SUB_PAGE]: state => state.page--,
   [SET_NAME]: (state, name) => (state.name = name),
+  [SET_TYPE]: (state, type) => (state.type = type),
   [ADD_TAG]: (state, tags) => state.totalTags.push(tags),
   [REMOVE_TAG]: (state, removedTag) =>
     state.totalTags.forEach(tags =>
@@ -118,6 +122,7 @@ const actions = {
         order: 'count',
         page: state.page,
         name: state.name,
+        type: state.type,
       })
       const tags = result.filter(tag => tag.count > 0)
       if (!_.isEmpty(tags)) {
@@ -139,9 +144,13 @@ const actions = {
       await dispatch(LOAD_TAG)
     }
   },
-  [SEARCH_TAG]: async ({ state, commit, dispatch }, name) => {
+  [SEARCH_TAG]: async (
+    { state, commit, dispatch },
+    { name = state.name, type = state.type } = {},
+  ) => {
     if (_.isEqual(state.name, name)) return
     commit(SET_NAME, name)
+    commit(SET_TYPE, type)
     commit(INIT_PAGE)
     commit(CLEAR_TAGS)
     await dispatch(LOAD_TAG)
@@ -161,13 +170,13 @@ const actions = {
         const result = await api.get('/cover', {
           tags: noCoverTag.name,
         })
-        if (!_.isEmpty(result))
+        if (!_.isEmpty(result)) {
           commit(ADD_COVER, {
             tag: noCoverTag.name,
             post: result[0],
           })
-        else commit(REMOVE_TAG, noCoverTag)
-        commit(NOT_YET_CACHED)
+          commit(NOT_YET_CACHED)
+        } else commit(REMOVE_TAG, noCoverTag)
       } else break
     }
     commit(FINISH_LOADING)
