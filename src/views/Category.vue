@@ -13,7 +13,7 @@
     >
       <template #header-action>
         <div>
-          <v-text-field v-model="name" dense single-line rounded outlined></v-text-field>
+          <v-text-field v-model="keyword" dense single-line rounded outlined></v-text-field>
         </div>
       </template>
       <template #content v-if="!isTagEmpty">
@@ -49,7 +49,7 @@ export default {
   data() {
     return {
       pagination: 1,
-      name: '',
+      keyword: '',
       autoRefreshTimer: null,
       debouncedSearchTag: null,
     }
@@ -58,6 +58,7 @@ export default {
     ...mapGetters([
       'page',
       'size',
+      'name',
       'tags',
       'categories',
       'isSearching',
@@ -75,8 +76,8 @@ export default {
     page(newPage) {
       this.pagination = newPage
     },
-    name(newName) {
-      this.debouncedSearchTag(newName)
+    keyword(newKeyword) {
+      this.debouncedSearchTag(newKeyword)
     },
   },
   methods: {
@@ -102,6 +103,11 @@ export default {
   destroyed() {
     window.clearInterval(this.autoRefreshTimer)
     this.debouncedSearchTag.cancel()
+  },
+  beforeRouteEnter(to, from, next) {
+    next(vm => {
+      vm.keyword = vm.name
+    })
   },
 }
 </script>

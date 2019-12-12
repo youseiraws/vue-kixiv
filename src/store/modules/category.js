@@ -51,6 +51,7 @@ const getters = {
   page: state => state.page,
   index: state => state.page - 1,
   size: state => state.totalTags.length,
+  name: state => state.name,
   tags: (state, getters) => state.totalTags[getters.index],
   categories: state => state.categories,
   isSearching: state => state.isSearching,
