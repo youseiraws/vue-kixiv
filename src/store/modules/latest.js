@@ -12,7 +12,6 @@ const ADD_PAGE = 'ADD_PAGE'
 const SET_DATE = 'SET_DATE'
 const ADD_DATE = 'ADD_DATE'
 const SUB_DATE = 'SUB_DATE'
-const CLEAR_DAILY = 'CLEAR_DAILY'
 const UPDATE_DAILY = 'UPDATE_DAILY'
 const START_LOADING = 'START_LOADING'
 const FINISH_LOADING = 'FINISH_LOADING'
@@ -44,7 +43,7 @@ const getters = {
   date: state => state.date,
   daily: state => state.latest[state.date],
   isLoading: state => state.isLoading,
-  isDailyEmpty: state => state.latest[state.date] === undefined,
+  isDailyEmpty: state => _.isEmpty(state.latest[state.date]),
   isLatestEmpty: state => Object.keys(state.latest).length === 0,
   hasNextDaily: state =>
     moment.utc(state.date, dateFormat).isBefore(moment.utc(), 'day'),
@@ -70,9 +69,6 @@ const mutations = {
       .utc(state.date, dateFormat)
       .subtract(1, 'days')
       .format(dateFormat)),
-  [CLEAR_DAILY]: state => {
-    if (state.latest[state.date] !== undefined) state.latest[state.date] = []
-  },
   [UPDATE_DAILY]: (state, newPosts) => {
     let daily = state.latest[state.date]
     if (daily !== undefined) {
@@ -116,7 +112,6 @@ const actions = {
       commit(NOT_YET_DAILY_LOADED)
       commit(NOT_YET_CACHED)
       commit(INIT_PAGE)
-      commit(CLEAR_DAILY)
       while (!state.hasDailyLoaded) {
         await dispatch(REQUEST_POSTS)
       }

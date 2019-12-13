@@ -3,7 +3,7 @@
     <container
       :gap="64"
       :columns="5"
-      :is-loading="isSearching||isCaching"
+      :is-loading="isSearching"
       :is-show-footer-left-indicator="hasPrevPage"
       :is-show-footer-right-indicator="hasNextPage"
       :is-show-refresh="!hasCached"
@@ -12,27 +12,29 @@
       @refresh-click="refreshCategory"
     >
       <template #header-action>
-        <div>
-          <v-menu offset-y transition="scroll-y-transition" :disabled="isLoading">
-            <template v-slot:activator="{on}">
-              <v-btn text x-large v-on="on" :disabled="isLoading"></v-btn>
+        <div class="d-inline-flex">
+          <v-menu offset-y transition="scroll-y-transition" :disabled="isSearching">
+            <template #activator="{on}">
+              <v-btn
+                class="mt-1"
+                light
+                outlined
+                v-on="on"
+                :disabled="isSearching"
+                :color="tagType.color"
+              >{{tagType.name}}</v-btn>
             </template>
             <template>
-              <v-list flat>
+              <v-list>
                 <v-list-item-group v-model="tagType" mandatory>
-                  <v-list-item
-                    v-for="tagType in tagTypes"
-                    :key="tagType.value"
-                    :value="tagType.value"
-                    :color="tagType.color"
-                  >
-                    <v-list-item-title>{{tagType.name}}</v-list-item-title>
+                  <v-list-item v-for="tagType in tagTypes" :key="tagType.value" :value="tagType">
+                    <v-list-item-title :style="{color:tagType.color}">{{tagType.name}}</v-list-item-title>
                   </v-list-item>
                 </v-list-item-group>
               </v-list>
             </template>
           </v-menu>
-          <v-text-field v-model="keyword" dense single-line rounded outlined></v-text-field>
+          <v-text-field class="ml-8" v-model="keyword" dense single-line rounded outlined></v-text-field>
         </div>
       </template>
       <template #content v-if="!isTagEmpty">
@@ -46,7 +48,7 @@
         ></cover>
       </template>
       <template #footer-title>
-        <v-pagination v-model="pagination" :length="size" :disabled="isSearching||isCaching"></v-pagination>
+        <v-pagination v-model="pagination" :length="size" :disabled="isSearching"></v-pagination>
       </template>
     </container>
   </div>
@@ -104,7 +106,11 @@ export default {
           color: '#00bbbb',
         },
       ],
-      tagType: '',
+      tagType: {
+        name: 'any',
+        value: '',
+        color: '#000000',
+      },
       pagination: 1,
       keyword: '',
       autoRefreshTimer: null,
@@ -138,7 +144,7 @@ export default {
       this.debouncedSearchTag(newKeyword)
     },
     tagType(newTagType) {
-      this.searchTag({ type: newTagType })
+      this.searchTag({ type: newTagType.value })
     },
   },
   methods: {
@@ -171,7 +177,7 @@ export default {
   beforeRouteEnter(to, from, next) {
     next(vm => {
       vm.keyword = vm.name
-      vm.tagType = vm.type
+      vm.tagType = vm.tagTypes.find(tagType => tagType.value === vm.type)
     })
   },
 }

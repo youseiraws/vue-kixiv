@@ -20,8 +20,8 @@
           :close-on-content-click="false"
           :disabled="isLoading"
         >
-          <template v-slot:activator="{on}">
-            <v-btn text x-large v-on="on" :disabled="isLoading">{{date}}</v-btn>
+          <template #activator="{on}">
+            <v-btn text x-large v-on="on" :disabled="isLoading">{{date | formatDisplayDate}}</v-btn>
           </template>
           <template>
             <v-date-picker no-title scrollable locale="zh-cn" v-model="pickerDate" :max="today"></v-date-picker>
@@ -39,6 +39,7 @@ import { Container, Post } from '../components/common'
 
 const { mapGetters, mapActions } = createNamespacedHelpers('latest')
 const dateFormat = 'YYYY-MM-DD'
+const dateDisplayFormat = 'YYYY年MM月DD日'
 
 export default {
   name: 'Latest',
@@ -75,6 +76,12 @@ export default {
     },
     date(newDate) {
       this.pickerDate = newDate
+    },
+  },
+  filters: {
+    formatDisplayDate(date) {
+      if (!date) return ''
+      return moment.utc(date, dateFormat).format(dateDisplayFormat)
     },
   },
   methods: {

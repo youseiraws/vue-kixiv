@@ -13,6 +13,26 @@
       <template #header-title>
         <v-chip label outlined>{{name}}</v-chip>
       </template>
+      <template #header-action>
+        <v-menu offset-y transition="scroll-y-transition" :disabled="isLoading">
+          <template #activator="{on}">
+            <v-btn light outlined v-on="on" :disabled="isLoading">{{postOrder.name}}</v-btn>
+          </template>
+          <template>
+            <v-list>
+              <v-list-item-group v-model="postOrder" mandatory>
+                <v-list-item
+                  v-for="postOrder in postOrders"
+                  :key="postOrder.value"
+                  :value="postOrder"
+                >
+                  <v-list-item-title>{{postOrder.name}}</v-list-item-title>
+                </v-list-item>
+              </v-list-item-group>
+            </v-list>
+          </template>
+        </v-menu>
+      </template>
       <template #content v-if="!isTagEmpty">
         <post v-for="post in tag" :key="post.id" :size="301" :post="post" :posts="tag"></post>
       </template>
@@ -44,6 +64,24 @@ export default {
   },
   data() {
     return {
+      postOrders: [
+        {
+          name: '随机',
+          value: 'random',
+        },
+        {
+          name: '最新',
+          value: 'latest',
+        },
+        {
+          name: '热门',
+          value: 'score',
+        },
+      ],
+      postOrder: {
+        name: '随机',
+        value: 'random',
+      },
       pagination: 1,
       autoRefreshTimer: null,
     }
@@ -52,6 +90,7 @@ export default {
     ...mapGetters([
       'page',
       'size',
+      'order',
       'tag',
       'isLoading',
       'isTagEmpty',
@@ -67,6 +106,9 @@ export default {
     page(newPage) {
       this.pagination = newPage
     },
+    postOrder(newPostOrder) {
+      this.sortTag(newPostOrder.value)
+    },
   },
   methods: {
     ...mapActions({
@@ -74,12 +116,16 @@ export default {
       loadTag: 'LOAD_TAG',
       prevTag: 'PREV_TAG',
       nextTag: 'NEXT_TAG',
+      sortTag: 'SORT_TAG',
       refreshTag: 'REFRESH_TAG',
     }),
   },
   beforeRouteEnter(to, from, next) {
     next(vm => {
       vm.initState()
+      vm.postOrder = vm.postOrders.find(
+        postOrder => postOrder.value === vm.order,
+      )
       vm.loadTag({ name: to.params.name })
       vm.autoRefreshTimer = window.setInterval(() => vm.refreshTag(), 20000)
     })

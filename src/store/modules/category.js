@@ -121,7 +121,7 @@ const actions = {
       const result = await api.get('/tag', {
         order: 'count',
         page: state.page,
-        name: state.name,
+        name: _.toLower(state.name),
         type: state.type,
       })
       const tags = result.filter(tag => tag.count > 0)
@@ -148,7 +148,7 @@ const actions = {
     { state, commit, dispatch },
     { name = state.name, type = state.type } = {},
   ) => {
-    if (_.isEqual(state.name, name)) return
+    if (_.isEqual(state.name, name) && _.isEqual(state.type, type)) return
     commit(SET_NAME, name)
     commit(SET_TYPE, type)
     commit(INIT_PAGE)

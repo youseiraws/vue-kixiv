@@ -11,6 +11,7 @@ const ADD_PAGE = 'ADD_PAGE'
 const SUB_PAGE = 'SUB_PAGE'
 const INIT_NAME = 'INIT_NAME'
 const SET_NAME = 'SET_NAME'
+const SET_ORDER = 'SET_ORDER'
 const UPDATE_TAG = 'UPDATE_TAG'
 const CLEAR_TAGS = 'CLEAR_TAGS'
 const START_LOADING = 'START_LOADING'
@@ -25,12 +26,14 @@ const INIT_STATE = 'INIT_STATE'
 const LOAD_TAG = 'LOAD_TAG'
 const PREV_TAG = 'PREV_TAG'
 const NEXT_TAG = 'NEXT_TAG'
+const SORT_TAG = 'SORT_TAG'
 const REFRESH_TAG = 'REFRESH_TAG'
 const GET_NOT_CACHED_POSTS = 'GET_NOT_CACHED_POSTS'
 
 const state = {
   page: 1,
   name: '',
+  order: 'random',
   tags: [],
   isLoading: false,
   hasLoaded: false,
@@ -41,6 +44,7 @@ const getters = {
   page: state => state.page,
   index: state => state.page - 1,
   size: state => state.tags.length,
+  order: state => state.order,
   tag: (state, getters) => state.tags[getters.index],
   isLoading: state => state.isLoading,
   isTagEmpty: (state, getters) => _.isEmpty(state.tags[getters.index]),
@@ -58,6 +62,7 @@ const mutations = {
   [SUB_PAGE]: state => state.page--,
   [INIT_NAME]: state => (state.name = ''),
   [SET_NAME]: (state, name) => (state.name = name),
+  [SET_ORDER]: (state, order) => (state.order = order),
   [UPDATE_TAG]: (state, newPosts) => {
     let tag = state.tags[state.page - 1]
     if (tag !== undefined) {
@@ -80,7 +85,6 @@ const mutations = {
 const actions = {
   [INIT_STATE]: ({ commit }) => {
     commit(INIT_PAGE)
-    commit(INIT_NAME)
     commit(CLEAR_TAGS)
     commit(FINISH_LOADING)
     commit(NOT_YET_LOADED)
@@ -97,10 +101,29 @@ const actions = {
     if (getters.isTagEmpty) {
       commit(NOT_YET_LOADED)
       commit(NOT_YET_CACHED)
-      const result = await api.get('/random', {
-        page: state.page,
-        tags: state.name,
-      })
+
+      let result
+      switch (state.order) {
+        case 'random':
+          result = await api.get('/random', {
+            page: state.page,
+            tags: state.name,
+          })
+          break
+        case 'latest':
+          result = await api.get('/post', {
+            page: state.page,
+            tags: state.name,
+          })
+          break
+        case 'score':
+          result = await api.get('/post', {
+            page: state.page,
+            tags: `order:score ${state.name}`,
+          })
+          break
+      }
+
       if (!_.isEmpty(result)) commit(ADD_POSTS, result)
       else commit(ALREADY_LOADED)
     } else {
@@ -126,6 +149,11 @@ const actions = {
       commit(ADD_PAGE)
       await dispatch(LOAD_TAG)
     }
+  },
+  [SORT_TAG]: async ({ commit, dispatch }, order) => {
+    commit(SET_ORDER, order)
+    await dispatch(INIT_STATE)
+    await dispatch(LOAD_TAG)
   },
   [REFRESH_TAG]: async ({ state, dispatch }) => {
     if (!state.hasCached) await dispatch(LOAD_TAG)
