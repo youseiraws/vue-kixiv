@@ -44,7 +44,6 @@ const getters = {
   daily: state => state.latest[state.date],
   isLoading: state => state.isLoading,
   isDailyEmpty: state => _.isEmpty(state.latest[state.date]),
-  isLatestEmpty: state => Object.keys(state.latest).length === 0,
   hasNextDaily: state =>
     moment.utc(state.date, dateFormat).isBefore(moment.utc(), 'day'),
   hasCached: state => state.hasCached,

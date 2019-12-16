@@ -1,12 +1,12 @@
 <template>
-  <div id="latest">
+  <div id="popular">
     <container
       :is-loading="isLoading"
-      :is-show-footer-left-indicator="hasNextDaily"
+      :is-show-footer-left-indicator="hasNextDuration"
       :is-show-refresh="!hasCached"
-      @footer-left-indicator-click="nextDaily"
-      @footer-right-indicator-click="prevDaily"
-      @refresh-click="refreshDaily"
+      @footer-left-indicator-click="nextDuration"
+      @footer-right-indicator-click="prevDuration"
+      @refresh-click="refreshDuration"
     >
       <template #header-action>
         <v-menu
@@ -21,12 +21,12 @@
             <v-btn text x-large v-on="on" :disabled="isLoading">{{date | formatDisplayDate}}</v-btn>
           </template>
           <template>
-            <v-date-picker no-title scrollable locale="zh-cn" v-model="pickerDate" :max="today"></v-date-picker>
+            <v-date-picker no-title scrollable locale="zh-cn" v-model="pickerDate" :max="yesterday"></v-date-picker>
           </template>
         </v-menu>
       </template>
-      <template #content v-if="!isDailyEmpty">
-        <post v-for="post in daily" :key="post.id" :size="301" :post="post" :posts="daily"></post>
+      <template #content v-if="!isDurationEmpty">
+        <post v-for="post in popular" :key="post.id" :size="301" :post="post" :posts="popular"></post>
       </template>
     </container>
   </div>
@@ -37,23 +37,26 @@ import { createNamespacedHelpers } from 'vuex'
 import moment from 'moment'
 import { Container, Post } from '../components/common'
 
-const { mapGetters, mapActions } = createNamespacedHelpers('latest')
+const { mapGetters, mapActions } = createNamespacedHelpers('popular')
 const dateFormat = 'YYYY-MM-DD'
 const dateDisplayFormat = 'YYYY年MM月DD日'
+const monthDisplayFormat = 'YYYY年MM月'
 
 export default {
-  name: 'Latest',
+  name: 'Popular',
   components: {
     Container,
     Post,
   },
   data() {
     return {
-      today: moment()
+      yesterday: moment()
         .utc()
+        .subtract(1, 'days')
         .format(dateFormat),
       pickerDate: moment()
         .utc()
+        .subtract(1, 'days')
         .format(dateFormat),
       menu: false,
       autoRefreshTimer: null,
@@ -62,17 +65,19 @@ export default {
   computed: {
     ...mapGetters([
       'date',
-      'daily',
+      'startDate',
+      'type',
+      'duration',
       'isLoading',
-      'isDailyEmpty',
-      'hasNextDaily',
+      'isDurationEmpty',
+      'hasNextDuration',
       'hasCached',
     ]),
   },
   watch: {
     pickerDate(newPickerDate) {
       this.menu = false
-      this.loadDaily(newPickerDate)
+      this.loadDuration(moment.utc(newPickerDate, dateFormat))
     },
     date(newDate) {
       this.pickerDate = newDate
@@ -81,20 +86,32 @@ export default {
   filters: {
     formatDisplayDate(date) {
       if (!date) return ''
-      return moment.utc(date, dateFormat).format(dateDisplayFormat)
+      switch (this.type) {
+        case 'day':
+          return this.startDate.format(dateDisplayFormat)
+        case 'week':
+          return `${this.startDate.format(dateDisplayFormat)}-${this.startDate
+            .day('Sunday')
+            .format(dateDisplayFormat)}`
+        case 'month':
+          return this.startDate.format(monthDisplayFormat)
+      }
     },
   },
   methods: {
     ...mapActions({
-      loadDaily: 'LOAD_DAILY',
-      prevDaily: 'PREV_DAILY',
-      nextDaily: 'NEXT_DAILY',
-      refreshDaily: 'REFRESH_DAILY',
+      loadDuration: 'LOAD_DURATION',
+      prevDuration: 'PREV_DURATION',
+      nextDuration: 'NEXT_DURATION',
+      refreshDuration: 'REFRESH_DURATION',
     }),
   },
   created() {
-    this.loadDaily()
-    this.autoRefreshTimer = window.setInterval(() => this.refreshDaily(), 20000)
+    this.loadDuration()
+    this.autoRefreshTimer = window.setInterval(
+      () => this.refreshDuration(),
+      20000,
+    )
   },
   destroyed() {
     window.clearInterval(this.autoRefreshTimer)
