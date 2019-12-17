@@ -15,7 +15,7 @@
 
 <script>
 import { createNamespacedHelpers } from 'vuex'
-import { getPostUrl } from '../../util/util'
+import { getPostUrl } from '../util/util'
 
 const { mapActions } = createNamespacedHelpers('larger')
 

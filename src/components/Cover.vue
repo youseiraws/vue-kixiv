@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import { getPostUrl } from '../../util/util'
+import { getPostUrl } from '../util/util'
 
 export default {
   name: 'Cover',

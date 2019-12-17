@@ -11,15 +11,15 @@ const ADD_PAGE = 'ADD_PAGE'
 const SUB_PAGE = 'SUB_PAGE'
 const UPDATE_RANDOM = 'UPDATE_RANDOM'
 const CLEAR_RANDOMS = 'CLEAR_RANDOMS'
+const SET_TAGS = 'SET_TAGS'
+const CLEAR_ITEMS = 'CLEAR_ITEMS'
+const SET_ITEMS = 'SET_ITEMS'
 const START_LOADING = 'START_LOADING'
 const FINISH_LOADING = 'FINISH_LOADING'
 const ALREADY_LOADED = 'ALREADY_LOADED'
 const NOT_YET_LOADED = 'NOT_YET_LOADED'
 const ALREADY_CACHED = 'ALREADY_CACHED'
 const NOT_YET_CACHED = 'NOT_YET_CACHED'
-const SET_SELECT = 'SET_SELECT'
-const CLEAR_ITEMS = 'CLEAR_ITEMS'
-const SET_ITEMS = 'SET_ITEMS'
 const START_SEARCHING = 'START_SEARCHING'
 const FINISH_SEARCHING = 'FINISH_SEARCHING'
 
@@ -35,11 +35,11 @@ const SEARCH_TAG = 'SEARCH_TAG'
 const state = {
   page: 1,
   randoms: [],
+  tags: [],
+  items: [],
   isLoading: false,
   hasLoaded: false,
   hasCached: false,
-  select: [],
-  items: [],
   isSearching: false,
 }
 
@@ -48,14 +48,15 @@ const getters = {
   index: state => state.page - 1,
   size: state => state.randoms.length,
   random: (state, getters) => state.randoms[getters.index],
+  tags: state => state.tags,
+  tagStr: state => state.tags.map(tag => tag.name).join(' '),
+  items: state => state.items,
   isLoading: state => state.isLoading,
   isRandomEmpty: (state, getters) => _.isEmpty(state.randoms[getters.index]),
   hasCached: state => state.hasCached,
   hasPrevPage: state => state.page > 1,
   hasNextPage: (state, getters) =>
     !state.hasLoaded || state.page < getters.size,
-  tags: state => state.select.map(tag => tag.name).join(' '),
-  items: state => state.items,
   isSearching: state => state.isSearching,
 }
 
@@ -76,17 +77,16 @@ const mutations = {
     }
   },
   [CLEAR_RANDOMS]: state => (state.randoms = []),
+  [SET_TAGS]: (state, tags) => (state.tags = tags),
+  [CLEAR_ITEMS]: state =>
+    (state.items = state.items.filter(item => state.tags.includes(item))),
+  [SET_ITEMS]: (state, items = []) => (state.items = state.tags.concat(items)),
   [START_LOADING]: state => (state.isLoading = true),
   [FINISH_LOADING]: state => (state.isLoading = false),
   [ALREADY_LOADED]: state => (state.hasLoaded = true),
   [NOT_YET_LOADED]: state => (state.hasLoaded = false),
   [ALREADY_CACHED]: state => (state.hasCached = true),
   [NOT_YET_CACHED]: state => (state.hasCached = false),
-  [SET_SELECT]: (state, select) => (state.select = select),
-  [CLEAR_ITEMS]: state =>
-    (state.items = state.items.filter(item => state.select.includes(item))),
-  [SET_ITEMS]: (state, items = []) =>
-    (state.items = state.select.concat(items)),
   [START_SEARCHING]: state => (state.isSearching = true),
   [FINISH_SEARCHING]: state => (state.isSearching = false),
 }
@@ -104,7 +104,7 @@ const actions = {
       commit(NOT_YET_CACHED)
       const result = await api.get('/random', {
         page: state.page,
-        tags: getters.tags,
+        tags: getters.tagStr,
       })
       if (!_.isEmpty(result)) commit(ADD_POSTS, result)
       else commit(ALREADY_LOADED)
@@ -132,9 +132,9 @@ const actions = {
       await dispatch(LOAD_RANDOM)
     }
   },
-  [SEARCH_RANDOM]: async ({ state, commit, dispatch }, select) => {
-    if (_.isEqual(state.select, select)) return
-    commit(SET_SELECT, select)
+  [SEARCH_RANDOM]: async ({ state, commit, dispatch }, tags) => {
+    if (_.isEqual(state.tags, tags)) return
+    commit(SET_TAGS, tags)
     commit(SET_ITEMS)
     commit(INIT_PAGE)
     commit(CLEAR_RANDOMS)

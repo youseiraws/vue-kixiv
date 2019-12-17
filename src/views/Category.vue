@@ -57,7 +57,7 @@
 <script>
 import { createNamespacedHelpers } from 'vuex'
 import _ from 'lodash'
-import { Container, Cover } from '../components/common'
+import { Container, Cover } from '../components'
 
 const { mapGetters, mapActions } = createNamespacedHelpers('category')
 
@@ -137,9 +137,6 @@ export default {
     pagination(newPagination) {
       this.loadTag(newPagination)
     },
-    page(newPage) {
-      this.pagination = newPage
-    },
     keyword(newKeyword) {
       this.debouncedSearchTag(newKeyword)
     },
@@ -176,6 +173,7 @@ export default {
   },
   beforeRouteEnter(to, from, next) {
     next(vm => {
+      vm.pagination = vm.page
       vm.keyword = vm.name
       vm.tagType = vm.tagTypes.find(tagType => tagType.value === vm.type)
     })

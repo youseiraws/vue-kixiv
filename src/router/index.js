@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import { Latest, Random, Category, Tag } from '../views'
+import { Latest, Random, Popular, Category, Tag } from '../views'
 
 Vue.use(VueRouter)
 
@@ -14,6 +14,11 @@ const routes = [
     path: '/random',
     name: 'random',
     component: Random,
+  },
+  {
+    path: '/popular',
+    name: 'popular',
+    component: Popular,
   },
   {
     path: '/category',

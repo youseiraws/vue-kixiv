@@ -9,24 +9,50 @@
       @refresh-click="refreshDuration"
     >
       <template #header-action>
-        <v-menu
-          v-model="menu"
-          offset-y
-          nudge-left="72.5"
-          transition="scroll-y-transition"
-          :close-on-content-click="false"
-          :disabled="isLoading"
-        >
-          <template #activator="{on}">
-            <v-btn text x-large v-on="on" :disabled="isLoading">{{date | formatDisplayDate}}</v-btn>
-          </template>
-          <template>
-            <v-date-picker no-title scrollable locale="zh-cn" v-model="pickerDate" :max="yesterday"></v-date-picker>
-          </template>
-        </v-menu>
+        <div class="d-inline-flex">
+          <v-menu offset-y transition="scroll-y-transition" :disabled="isLoading">
+            <template #activator="{on}">
+              <v-btn light outlined v-on="on" :disabled="isLoading">{{popularType.name}}</v-btn>
+            </template>
+            <template>
+              <v-list>
+                <v-list-item-group v-model="popularType" mandatory>
+                  <v-list-item
+                    v-for="popularType in popularTypes"
+                    :key="popularType.value"
+                    :value="popularType"
+                  >
+                    <v-list-item-title>{{popularType.name}}</v-list-item-title>
+                  </v-list-item>
+                </v-list-item-group>
+              </v-list>
+            </template>
+          </v-menu>
+          <v-menu
+            v-model="menu"
+            offset-y
+            nudge-left="72.5"
+            transition="scroll-y-transition"
+            :close-on-content-click="false"
+            :disabled="isLoading"
+          >
+            <template #activator="{on}">
+              <v-btn text x-large v-on="on" :disabled="isLoading">{{startDate | formatDisplayDate}}</v-btn>
+            </template>
+            <template>
+              <v-date-picker
+                no-title
+                scrollable
+                locale="zh-cn"
+                v-model="pickerDate"
+                :max="yesterday"
+              ></v-date-picker>
+            </template>
+          </v-menu>
+        </div>
       </template>
       <template #content v-if="!isDurationEmpty">
-        <post v-for="post in popular" :key="post.id" :size="301" :post="post" :posts="popular"></post>
+        <post v-for="post in duration" :key="post.id" :size="301" :post="post" :posts="duration"></post>
       </template>
     </container>
   </div>
@@ -35,7 +61,7 @@
 <script>
 import { createNamespacedHelpers } from 'vuex'
 import moment from 'moment'
-import { Container, Post } from '../components/common'
+import { Container, Post } from '../components'
 
 const { mapGetters, mapActions } = createNamespacedHelpers('popular')
 const dateFormat = 'YYYY-MM-DD'
@@ -50,6 +76,24 @@ export default {
   },
   data() {
     return {
+      popularTypes: [
+        {
+          name: '日排行',
+          value: 'day',
+        },
+        {
+          name: '周排行',
+          value: 'week',
+        },
+        {
+          name: '月排行',
+          value: 'month',
+        },
+      ],
+      popularType: {
+        name: '日排行',
+        value: 'day',
+      },
       yesterday: moment()
         .utc()
         .subtract(1, 'days')
@@ -82,19 +126,22 @@ export default {
     date(newDate) {
       this.pickerDate = newDate
     },
+    popularType(newPopularType) {
+      this.searchDuration(newPopularType.value)
+    },
   },
   filters: {
     formatDisplayDate(date) {
       if (!date) return ''
       switch (this.type) {
         case 'day':
-          return this.startDate.format(dateDisplayFormat)
+          return date.format(dateDisplayFormat)
         case 'week':
-          return `${this.startDate.format(dateDisplayFormat)}-${this.startDate
+          return `${date.format(dateDisplayFormat)}-${date
             .day('Sunday')
             .format(dateDisplayFormat)}`
         case 'month':
-          return this.startDate.format(monthDisplayFormat)
+          return date.format(monthDisplayFormat)
       }
     },
   },
@@ -103,6 +150,7 @@ export default {
       loadDuration: 'LOAD_DURATION',
       prevDuration: 'PREV_DURATION',
       nextDuration: 'NEXT_DURATION',
+      searchDuration: 'SEARCH_DURATION',
       refreshDuration: 'REFRESH_DURATION',
     }),
   },

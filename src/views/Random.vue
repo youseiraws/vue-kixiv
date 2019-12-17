@@ -47,7 +47,7 @@
 <script>
 import { createNamespacedHelpers } from 'vuex'
 import _ from 'lodash'
-import { Container, Post } from '../components/common'
+import { Container, Post } from '../components'
 
 const { mapGetters, mapActions } = createNamespacedHelpers('random')
 
@@ -72,6 +72,7 @@ export default {
       'page',
       'size',
       'random',
+      'tags',
       'isLoading',
       'isRandomEmpty',
       'hasCached',
@@ -84,9 +85,6 @@ export default {
   watch: {
     pagination(newPagination) {
       this.loadRandom(newPagination)
-    },
-    page(newPage) {
-      this.pagination = newPage
     },
     search(newSearch) {
       this.debouncedSearchTag(newSearch)
@@ -121,6 +119,12 @@ export default {
     window.clearInterval(this.autoRefreshTimer)
     this.debouncedSearchTag.cancel()
     this.debouncedSearchRandom.cancel()
+  },
+  beforeRouteEnter(to, from, next) {
+    next(vm => {
+      vm.pagination = vm.page
+      vm.select = vm.tags
+    })
   },
 }
 </script>

@@ -2,12 +2,17 @@ import _ from 'lodash'
 import moment from 'moment'
 import api from '../../api'
 
+const urls = ['preview_url', 'sample_url', 'jpeg_url', 'file_url']
+
 /** mutations-types **/
 const ADD_POSTS = 'ADD_POSTS'
+const INIT_DATE = 'INIT_DATE'
 const SET_DATE = 'SET_DATE'
 const ADD_DATE = 'ADD_DATE'
 const SUB_DATE = 'SUB_DATE'
+const SET_TYPE = 'SET_TYPE'
 const UPDATE_DURATION = 'UPDATE_DURATION'
+const CLEAR_POPULAR = 'CLEAR_POPULAR'
 const START_LOADING = 'START_LOADING'
 const FINISH_LOADING = 'FINISH_LOADING'
 const ALREADY_CACHED = 'ALREADY_CACHED'
@@ -17,6 +22,7 @@ const NOT_YET_CACHED = 'NOT_YET_CACHED'
 const LOAD_DURATION = 'LOAD_DURATION'
 const PREV_DURATION = 'PREV_DURATION'
 const NEXT_DURATION = 'NEXT_DURATION'
+const SEARCH_DURATION = 'SEARCH_DURATION'
 const REFRESH_DURATION = 'REFRESH_DURATION'
 const GET_NOT_CACHED_POSTS = 'GET_NOT_CACHED_POSTS'
 
@@ -54,9 +60,11 @@ const getters = {
 
 const mutations = {
   [ADD_POSTS]: (state, posts) => (state.popular[state.date] = posts),
+  [INIT_DATE]: state => (state.date = moment.utc().subtract(1, 'days')),
   [SET_DATE]: (state, date) => (state.date = date),
   [ADD_DATE]: state => (state.date = state.date.add(1, `${state.type}s`)),
   [SUB_DATE]: state => (state.date = state.date.subtract(1, `${state.type}s`)),
+  [SET_TYPE]: (state, type) => (state.type = type),
   [UPDATE_DURATION]: (state, newPosts) => {
     let duration = state.popular[state.date]
     if (duration !== undefined) {
@@ -67,6 +75,7 @@ const mutations = {
       })
     }
   },
+  [CLEAR_POPULAR]: state => (state.popular = {}),
   [START_LOADING]: state => (state.isLoading = true),
   [FINISH_LOADING]: state => (state.isLoading = false),
   [ALREADY_CACHED]: state => (state.hasCached = true),
@@ -111,6 +120,13 @@ const actions = {
       commit(ADD_DATE)
       await dispatch(LOAD_DURATION)
     }
+  },
+  [SEARCH_DURATION]: async ({ state, commit, dispatch }, type) => {
+    if (type === state.type) return
+    commit(SET_TYPE, type)
+    commit(INIT_DATE)
+    commit(CLEAR_POPULAR)
+    await dispatch(LOAD_DURATION)
   },
   [REFRESH_DURATION]: async ({ state, dispatch }) => {
     if (!state.hasCached) await dispatch(LOAD_DURATION)

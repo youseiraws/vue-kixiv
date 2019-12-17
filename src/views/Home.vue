@@ -14,13 +14,14 @@
 </template>
 
 <script>
-import { Latest, Random, Category } from './index'
+import { Latest, Random, Popular, Category } from './index'
 
 export default {
   name: 'Home',
   components: {
     Latest,
     Random,
+    Popular,
     Category,
   },
   data() {
@@ -34,6 +35,10 @@ export default {
         {
           value: 'random',
           text: '随机',
+        },
+        {
+          value: 'popular',
+          text: '热门',
         },
         {
           value: 'category',

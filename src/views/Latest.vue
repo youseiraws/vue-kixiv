@@ -35,7 +35,7 @@
 <script>
 import { createNamespacedHelpers } from 'vuex'
 import moment from 'moment'
-import { Container, Post } from '../components/common'
+import { Container, Post } from '../components'
 
 const { mapGetters, mapActions } = createNamespacedHelpers('latest')
 const dateFormat = 'YYYY-MM-DD'
@@ -74,9 +74,6 @@ export default {
       this.menu = false
       this.loadDaily(newPickerDate)
     },
-    date(newDate) {
-      this.pickerDate = newDate
-    },
   },
   filters: {
     formatDisplayDate(date) {
@@ -98,6 +95,11 @@ export default {
   },
   destroyed() {
     window.clearInterval(this.autoRefreshTimer)
+  },
+  beforeRouteEnter(to, from, next) {
+    next(vm => {
+      vm.pickerDate = vm.date
+    })
   },
 }
 </script>

@@ -46,7 +46,7 @@
 <script>
 import { createNamespacedHelpers } from 'vuex'
 import _ from 'lodash'
-import { Container, Post } from '../components/common'
+import { Container, Post } from '../components'
 
 const { mapGetters, mapActions } = createNamespacedHelpers('tag')
 
@@ -103,9 +103,6 @@ export default {
     pagination(newPagination) {
       this.loadTag({ page: newPagination })
     },
-    page(newPage) {
-      this.pagination = newPage
-    },
     postOrder(newPostOrder) {
       this.sortTag(newPostOrder.value)
     },
@@ -123,6 +120,7 @@ export default {
   beforeRouteEnter(to, from, next) {
     next(vm => {
       vm.initState()
+      vm.pagination = vm.page
       vm.postOrder = vm.postOrders.find(
         postOrder => postOrder.value === vm.order,
       )

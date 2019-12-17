@@ -132,7 +132,7 @@ export default {
 }
 
 .container-div {
-  display: grid;
+  display: none;
 }
 
 .container-div-indicator {
