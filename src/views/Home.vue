@@ -8,7 +8,9 @@
       </v-toolbar-title>
     </v-toolbar>
     <div class="home-content">
-      <router-view></router-view>
+      <keep-alive :exclude="['Tag']">
+        <router-view></router-view>
+      </keep-alive>
     </div>
   </div>
 </template>

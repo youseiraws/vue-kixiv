@@ -12,13 +12,12 @@
         <v-menu
           v-model="menu"
           offset-y
-          nudge-left="72.5"
           transition="scroll-y-transition"
           :close-on-content-click="false"
           :disabled="isLoading"
         >
           <template #activator="{on}">
-            <v-btn text x-large v-on="on" :disabled="isLoading">{{date | formatDisplayDate}}</v-btn>
+            <v-btn text x-large v-on="on" :disabled="isLoading">{{formatedDisplayDate}}</v-btn>
           </template>
           <template>
             <v-date-picker no-title scrollable locale="zh-cn" v-model="pickerDate" :max="today"></v-date-picker>
@@ -68,17 +67,18 @@ export default {
       'hasNextDaily',
       'hasCached',
     ]),
+    formatedDisplayDate() {
+      if (!this.date) return ''
+      return moment.utc(this.date, dateFormat).format(dateDisplayFormat)
+    },
   },
   watch: {
     pickerDate(newPickerDate) {
       this.menu = false
       this.loadDaily(newPickerDate)
     },
-  },
-  filters: {
-    formatDisplayDate(date) {
-      if (!date) return ''
-      return moment.utc(date, dateFormat).format(dateDisplayFormat)
+    date(newDate) {
+      this.pickerDate = newDate
     },
   },
   methods: {
@@ -95,11 +95,6 @@ export default {
   },
   destroyed() {
     window.clearInterval(this.autoRefreshTimer)
-  },
-  beforeRouteEnter(to, from, next) {
-    next(vm => {
-      vm.pickerDate = vm.date
-    })
   },
 }
 </script>

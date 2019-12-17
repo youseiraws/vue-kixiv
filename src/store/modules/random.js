@@ -48,6 +48,7 @@ const getters = {
   index: state => state.page - 1,
   size: state => state.randoms.length,
   random: (state, getters) => state.randoms[getters.index],
+  total: state => state.randoms.flat(),
   tags: state => state.tags,
   tagStr: state => state.tags.map(tag => tag.name).join(' '),
   items: state => state.items,
@@ -120,17 +121,15 @@ const actions = {
     }
     commit(FINISH_LOADING)
   },
-  [PREV_RANDOM]: async ({ getters, commit, dispatch }) => {
-    if (getters.hasPrevPage) {
-      commit(SUB_PAGE)
-      await dispatch(LOAD_RANDOM)
-    }
+  [PREV_RANDOM]: async ({ state, getters, commit, dispatch }) => {
+    if (state.isLoading || !getters.hasPrevPage) return
+    commit(SUB_PAGE)
+    await dispatch(LOAD_RANDOM)
   },
-  [NEXT_RANDOM]: async ({ getters, commit, dispatch }) => {
-    if (getters.hasNextPage) {
-      commit(ADD_PAGE)
-      await dispatch(LOAD_RANDOM)
-    }
+  [NEXT_RANDOM]: async ({ state, getters, commit, dispatch }) => {
+    if (state.isLoading || !getters.hasNextPage) return
+    commit(ADD_PAGE)
+    await dispatch(LOAD_RANDOM)
   },
   [SEARCH_RANDOM]: async ({ state, commit, dispatch }, tags) => {
     if (_.isEqual(state.tags, tags)) return

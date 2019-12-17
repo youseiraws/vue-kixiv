@@ -35,7 +35,14 @@
         </div>
       </template>
       <template #content v-if="!isRandomEmpty">
-        <post v-for="post in random" :key="post.id" :size="301" :post="post" :posts="random"></post>
+        <post
+          v-for="post in random"
+          :key="post.id"
+          :size="301"
+          :post="post"
+          :posts="total"
+          :loadMore="nextRandom"
+        ></post>
       </template>
       <template #footer-title>
         <v-pagination v-model="pagination" :length="size" :disabled="isLoading"></v-pagination>
@@ -72,6 +79,7 @@ export default {
       'page',
       'size',
       'random',
+      'total',
       'tags',
       'isLoading',
       'isRandomEmpty',
@@ -85,6 +93,9 @@ export default {
   watch: {
     pagination(newPagination) {
       this.loadRandom(newPagination)
+    },
+    page(newPage) {
+      this.pagination = newPage
     },
     search(newSearch) {
       this.debouncedSearchTag(newSearch)
@@ -119,12 +130,6 @@ export default {
     window.clearInterval(this.autoRefreshTimer)
     this.debouncedSearchTag.cancel()
     this.debouncedSearchRandom.cancel()
-  },
-  beforeRouteEnter(to, from, next) {
-    next(vm => {
-      vm.pagination = vm.page
-      vm.select = vm.tags
-    })
   },
 }
 </script>

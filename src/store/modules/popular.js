@@ -2,6 +2,7 @@ import _ from 'lodash'
 import moment from 'moment'
 import api from '../../api'
 
+const dateFormat = 'YYYY-MM-DD'
 const urls = ['preview_url', 'sample_url', 'jpeg_url', 'file_url']
 
 /** mutations-types **/
@@ -39,17 +40,19 @@ const getters = {
   startDate: state => {
     switch (state.type) {
       case 'day':
-        return state.date
+        return state.date.clone()
       case 'week':
-        return state.date.day('Monday')
+        return state.date.clone().isoWeekday('Monday')
       case 'month':
-        return state.date.date(1)
+        return state.date.clone().date(1)
     }
   },
+  formatedDate: (state, getters) => getters.startDate.format(dateFormat),
   type: state => state.type,
-  duration: state => state.popular[state.date],
+  duration: (state, getters) => state.popular[getters.formatedDate],
   isLoading: state => state.isLoading,
-  isDurationEmpty: state => _.isEmpty(state.popular[state.date]),
+  isDurationEmpty: (state, getters) =>
+    _.isEmpty(state.popular[getters.formatedDate]),
   hasNextDuration: state =>
     state.date.isBefore(
       moment.utc().subtract(1, 'days'),
@@ -59,14 +62,18 @@ const getters = {
 }
 
 const mutations = {
-  [ADD_POSTS]: (state, posts) => (state.popular[state.date] = posts),
+  [ADD_POSTS]: (state, { date, posts }) =>
+    (state.popular = {
+      ...state.popular,
+      [date.format(dateFormat)]: posts,
+    }),
   [INIT_DATE]: state => (state.date = moment.utc().subtract(1, 'days')),
   [SET_DATE]: (state, date) => (state.date = date),
-  [ADD_DATE]: state => (state.date = state.date.add(1, `${state.type}s`)),
-  [SUB_DATE]: state => (state.date = state.date.subtract(1, `${state.type}s`)),
+  [ADD_DATE]: state => (state.date = state.date.clone().add(1, `${state.type}s`)),
+  [SUB_DATE]: state => (state.date = state.date.clone().subtract(1, `${state.type}s`)),
   [SET_TYPE]: (state, type) => (state.type = type),
-  [UPDATE_DURATION]: (state, newPosts) => {
-    let duration = state.popular[state.date]
+  [UPDATE_DURATION]: (state, { date, newPosts }) => {
+    let duration = state.popular[date.format(dateFormat)]
     if (duration !== undefined) {
       newPosts.forEach(newPost => {
         const index = duration.findIndex(post => post.id === newPost.id)
@@ -95,10 +102,11 @@ const actions = {
       const result = await api.get('/popular', {
         type: state.type,
         day: getters.startDate.date(),
-        month: getters.startDate.month(),
+        month: getters.startDate.month() + 1,
         year: getters.startDate.year(),
       })
-      if (!_.isEmpty(result)) commit(ADD_POSTS, result)
+      if (!_.isEmpty(result))
+        commit(ADD_POSTS, { date: getters.startDate, posts: result })
     } else {
       const notCachedPosts = await dispatch(GET_NOT_CACHED_POSTS)
       if (!_.isEmpty(notCachedPosts)) {
@@ -106,7 +114,8 @@ const actions = {
         const result = await api.post('/cache', {
           posts: notCachedPosts,
         })
-        if (!_.isEmpty(result)) commit(UPDATE_DURATION, result)
+        if (!_.isEmpty(result))
+          commit(UPDATE_DURATION, { date: getters.startDate, newPosts: result })
       } else commit(ALREADY_CACHED)
     }
     commit(FINISH_LOADING)
@@ -131,8 +140,8 @@ const actions = {
   [REFRESH_DURATION]: async ({ state, dispatch }) => {
     if (!state.hasCached) await dispatch(LOAD_DURATION)
   },
-  [GET_NOT_CACHED_POSTS]: ({ state }) => {
-    const duration = state.popular[state.date]
+  [GET_NOT_CACHED_POSTS]: ({ state, getters }) => {
+    const duration = state.popular[getters.formatedDate]
     if (duration === undefined) return []
     return duration
       .filter(

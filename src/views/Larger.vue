@@ -42,11 +42,14 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['overlay', 'posts', 'index']),
+    ...mapGetters(['overlay', 'posts', 'index', 'count', 'loadMore']),
   },
   watch: {
     index(newIndex) {
       this.i = newIndex
+    },
+    i(newI) {
+      if (newI > this.count - 10) this.loadMore()
     },
   },
   methods: {

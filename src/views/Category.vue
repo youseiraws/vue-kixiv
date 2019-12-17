@@ -43,6 +43,7 @@
           :key="tag.id"
           :size="194"
           :name="tag.name"
+          :color="getTagColor(tag)"
           :cover="categories[tag.name]"
           @cover-click="coverClick"
         ></cover>
@@ -137,6 +138,9 @@ export default {
     pagination(newPagination) {
       this.loadTag(newPagination)
     },
+    page(newPage) {
+      this.pagination = newPage
+    },
     keyword(newKeyword) {
       this.debouncedSearchTag(newKeyword)
     },
@@ -152,8 +156,11 @@ export default {
       searchTag: 'SEARCH_TAG',
       refreshCategory: 'REFRESH_CATEGORY',
     }),
-    coverClick(name) {
-      this.$router.push({ name: 'tag', params: { name } })
+    getTagColor(tag) {
+      return this.tagTypes.find(tagType => tagType.name === tag.type).color
+    },
+    coverClick(tag) {
+      this.$router.push({ name: 'tag', params: { param: tag } })
     },
   },
   created() {
@@ -170,13 +177,6 @@ export default {
   destroyed() {
     window.clearInterval(this.autoRefreshTimer)
     this.debouncedSearchTag.cancel()
-  },
-  beforeRouteEnter(to, from, next) {
-    next(vm => {
-      vm.pagination = vm.page
-      vm.keyword = vm.name
-      vm.tagType = vm.tagTypes.find(tagType => tagType.value === vm.type)
-    })
   },
 }
 </script>

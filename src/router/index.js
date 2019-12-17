@@ -26,7 +26,7 @@ const routes = [
     component: Category,
   },
   {
-    path: '/tag/:name',
+    path: '/tag/:param',
     name: 'tag',
     component: Tag,
     props: true,

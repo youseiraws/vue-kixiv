@@ -9,7 +9,7 @@
       @refresh-click="refreshDuration"
     >
       <template #header-action>
-        <div class="d-inline-flex">
+        <div class="d-inline-flex align-center">
           <v-menu offset-y transition="scroll-y-transition" :disabled="isLoading">
             <template #activator="{on}">
               <v-btn light outlined v-on="on" :disabled="isLoading">{{popularType.name}}</v-btn>
@@ -31,18 +31,20 @@
           <v-menu
             v-model="menu"
             offset-y
-            nudge-left="72.5"
             transition="scroll-y-transition"
             :close-on-content-click="false"
             :disabled="isLoading"
           >
             <template #activator="{on}">
-              <v-btn text x-large v-on="on" :disabled="isLoading">{{startDate | formatDisplayDate}}</v-btn>
+              <v-btn text x-large v-on="on" :disabled="isLoading">{{formatedDisplayDate}}</v-btn>
             </template>
             <template>
               <v-date-picker
+                class="popular-date-picker"
                 no-title
                 scrollable
+                :show-current="false"
+                :type="datePickerType"
                 locale="zh-cn"
                 v-model="pickerDate"
                 :max="yesterday"
@@ -109,7 +111,6 @@ export default {
   computed: {
     ...mapGetters([
       'date',
-      'startDate',
       'type',
       'duration',
       'isLoading',
@@ -117,6 +118,26 @@ export default {
       'hasNextDuration',
       'hasCached',
     ]),
+    formatedDisplayDate() {
+      if (!this.date) return ''
+      switch (this.type) {
+        case 'day':
+          return this.date.format(dateDisplayFormat)
+        case 'week':
+          return `${this.date
+            .clone()
+            .isoWeekday('Monday')
+            .format(dateDisplayFormat)}-${this.date
+            .clone()
+            .isoWeekday('Sunday')
+            .format(dateDisplayFormat)}`
+        case 'month':
+          return this.date.format(monthDisplayFormat)
+      }
+    },
+    datePickerType() {
+      return this.type === 'month' ? 'month' : 'date'
+    },
   },
   watch: {
     pickerDate(newPickerDate) {
@@ -124,25 +145,10 @@ export default {
       this.loadDuration(moment.utc(newPickerDate, dateFormat))
     },
     date(newDate) {
-      this.pickerDate = newDate
+      this.pickerDate = newDate.format(dateFormat)
     },
     popularType(newPopularType) {
       this.searchDuration(newPopularType.value)
-    },
-  },
-  filters: {
-    formatDisplayDate(date) {
-      if (!date) return ''
-      switch (this.type) {
-        case 'day':
-          return date.format(dateDisplayFormat)
-        case 'week':
-          return `${date.format(dateDisplayFormat)}-${date
-            .day('Sunday')
-            .format(dateDisplayFormat)}`
-        case 'month':
-          return date.format(monthDisplayFormat)
-      }
     },
   },
   methods: {
@@ -168,4 +174,7 @@ export default {
 </script>
 
 <style scoped>
+.popular-date-picker {
+  width: 100%;
+}
 </style>
