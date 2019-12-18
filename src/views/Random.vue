@@ -31,6 +31,23 @@
             <template #append>
               <span></span>
             </template>
+            <template #selection="{attrs,on,item,selected,select}">
+              <v-chip
+                dark
+                label
+                small
+                close
+                v-bind="attrs"
+                v-on="on"
+                :color="getTagColor(item)"
+                :input-value="selected"
+                @click="select"
+                @click:close="removeItem(item)"
+              >{{item.name}}</v-chip>
+            </template>
+            <template #item="{item}">
+              <v-list-item-title :style="{color:getTagColor(item)}">{{item.name}}</v-list-item-title>
+            </template>
           </v-autocomplete>
         </div>
       </template>
@@ -66,10 +83,42 @@ export default {
   },
   data() {
     return {
+      tagTypes: [
+        {
+          name: 'general',
+          value: 0,
+          color: '#ffaaae',
+        },
+        {
+          name: 'artist',
+          value: 1,
+          color: '#cccc00',
+        },
+        {
+          name: 'copyright',
+          value: 3,
+          color: '#dd00dd',
+        },
+        {
+          name: 'character',
+          value: 4,
+          color: '#00aa00',
+        },
+        {
+          name: 'style',
+          value: 5,
+          color: '#ff2020',
+        },
+        {
+          name: 'circle',
+          value: 6,
+          color: '#00bbbb',
+        },
+      ],
       pagination: 1,
       autoRefreshTimer: null,
       search: null,
-      select: null,
+      select: [],
       debouncedSearchTag: null,
       debouncedSearchRandom: null,
     }
@@ -112,6 +161,12 @@ export default {
       refreshRandom: 'REFRESH_RANDOM',
       searchTag: 'SEARCH_TAG',
     }),
+    getTagColor(tag) {
+      return this.tagTypes.find(tagType => tagType.value === tag.type).color
+    },
+    removeItem(item) {
+      this.select = this.select.filter(sel => !_.isEqual(sel, item))
+    },
   },
   created() {
     this.loadRandom()

@@ -3,7 +3,7 @@
     <container
       :gap="64"
       :columns="5"
-      :is-loading="isSearching"
+      :is-loading="isSearching || isCaching"
       :is-show-footer-left-indicator="hasPrevPage"
       :is-show-footer-right-indicator="hasNextPage"
       :is-show-refresh="!hasCached"
@@ -159,8 +159,8 @@ export default {
     getTagColor(tag) {
       return this.tagTypes.find(tagType => tagType.name === tag.type).color
     },
-    coverClick(tag) {
-      this.$router.push({ name: 'tag', params: { param: tag } })
+    coverClick(name) {
+      this.$router.push({ name: 'tag', params: { name } })
     },
   },
   created() {

@@ -11,7 +11,7 @@
       @refresh-click="refreshTag"
     >
       <template #header-title>
-        <v-chip label outlined :color="param.color">{{param.name}}</v-chip>
+        <v-chip label outlined>{{name}}</v-chip>
       </template>
       <template #header-action>
         <v-menu offset-y transition="scroll-y-transition" :disabled="isLoading">
@@ -60,20 +60,9 @@ const { mapGetters, mapActions } = createNamespacedHelpers('tag')
 export default {
   name: 'Tag',
   props: {
-    param: {
-      type: Object,
-      default() {
-        return {
-          name: {
-            type: String,
-            default: '',
-          },
-          color: {
-            type: String,
-            default: '#000000',
-          },
-        }
-      },
+    name: {
+      type: String,
+      default: '',
     },
   },
   components: {

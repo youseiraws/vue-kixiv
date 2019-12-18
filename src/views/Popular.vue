@@ -60,7 +60,7 @@
           :size="301"
           :post="post"
           :posts="total"
-          :load-more="nextDuration"
+          :load-more="prevDuration"
         ></post>
       </template>
     </container>

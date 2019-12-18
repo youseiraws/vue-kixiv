@@ -31,7 +31,7 @@
           :size="301"
           :post="post"
           :posts="total"
-          :load-more="nextDaily"
+          :load-more="prevDaily"
         ></post>
       </template>
     </container>

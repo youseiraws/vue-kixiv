@@ -30,6 +30,7 @@
 
 <script>
 import { createNamespacedHelpers } from 'vuex'
+import _ from 'lodash'
 import { getPostUrl } from '../util/util'
 
 const { mapGetters, mapActions } = createNamespacedHelpers('larger')
@@ -49,6 +50,7 @@ export default {
       this.i = newIndex
     },
     i(newI) {
+      if (!_.isFunction(this.loadMore)) return
       if (newI > this.count - 10) this.loadMore()
     },
   },

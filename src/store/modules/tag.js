@@ -151,7 +151,8 @@ const actions = {
       await dispatch(LOAD_TAG)
     }
   },
-  [SORT_TAG]: async ({ commit, dispatch }, order) => {
+  [SORT_TAG]: async ({ state, commit, dispatch }, order) => {
+    if (_.isEqual(state.order, order)) return
     commit(SET_ORDER, order)
     await dispatch(INIT_STATE)
     await dispatch(LOAD_TAG)
