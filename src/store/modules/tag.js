@@ -46,6 +46,7 @@ const getters = {
   size: state => state.tags.length,
   order: state => state.order,
   tag: (state, getters) => state.tags[getters.index],
+  total: state => state.tags.flat(),
   isLoading: state => state.isLoading,
   isTagEmpty: (state, getters) => _.isEmpty(state.tags[getters.index]),
   hasCached: state => state.hasCached,

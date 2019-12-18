@@ -54,7 +54,14 @@
         </div>
       </template>
       <template #content v-if="!isDurationEmpty">
-        <post v-for="post in duration" :key="post.id" :size="301" :post="post" :posts="duration"></post>
+        <post
+          v-for="post in duration"
+          :key="post.id"
+          :size="301"
+          :post="post"
+          :posts="total"
+          :load-more="nextDuration"
+        ></post>
       </template>
     </container>
   </div>
@@ -113,6 +120,7 @@ export default {
       'date',
       'type',
       'duration',
+      'total',
       'isLoading',
       'isDurationEmpty',
       'hasNextDuration',

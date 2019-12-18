@@ -49,7 +49,6 @@ const getters = {
   size: state => state.randoms.length,
   random: (state, getters) => state.randoms[getters.index],
   total: state => state.randoms.flat(),
-  tags: state => state.tags,
   tagStr: state => state.tags.map(tag => tag.name).join(' '),
   items: state => state.items,
   isLoading: state => state.isLoading,

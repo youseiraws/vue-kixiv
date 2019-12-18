@@ -34,7 +34,14 @@
         </v-menu>
       </template>
       <template #content v-if="!isTagEmpty">
-        <post v-for="post in tag" :key="post.id" :size="301" :post="post" :posts="tag"></post>
+        <post
+          v-for="post in tag"
+          :key="post.id"
+          :size="301"
+          :post="post"
+          :posts="total"
+          :load-more="nextTag"
+        ></post>
       </template>
       <template #footer-title>
         <v-pagination v-model="pagination" :length="size" :disabled="isLoading"></v-pagination>
@@ -103,6 +110,7 @@ export default {
       'size',
       'order',
       'tag',
+      'total',
       'isLoading',
       'isTagEmpty',
       'hasCached',

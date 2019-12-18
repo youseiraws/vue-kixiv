@@ -42,6 +42,7 @@ const state = {
 const getters = {
   date: state => state.date,
   daily: state => state.latest[state.date],
+  total: state => Object.values(state.latest).flat(),
   isLoading: state => state.isLoading,
   isDailyEmpty: state => _.isEmpty(state.latest[state.date]),
   hasNextDaily: state =>

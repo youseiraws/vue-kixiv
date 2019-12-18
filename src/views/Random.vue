@@ -41,7 +41,7 @@
           :size="301"
           :post="post"
           :posts="total"
-          :loadMore="nextRandom"
+          :load-more="nextRandom"
         ></post>
       </template>
       <template #footer-title>
@@ -80,7 +80,6 @@ export default {
       'size',
       'random',
       'total',
-      'tags',
       'isLoading',
       'isRandomEmpty',
       'hasCached',

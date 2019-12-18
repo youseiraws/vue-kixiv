@@ -25,7 +25,14 @@
         </v-menu>
       </template>
       <template #content v-if="!isDailyEmpty">
-        <post v-for="post in daily" :key="post.id" :size="301" :post="post" :posts="daily"></post>
+        <post
+          v-for="post in daily"
+          :key="post.id"
+          :size="301"
+          :post="post"
+          :posts="total"
+          :load-more="nextDaily"
+        ></post>
       </template>
     </container>
   </div>
@@ -62,6 +69,7 @@ export default {
     ...mapGetters([
       'date',
       'daily',
+      'total',
       'isLoading',
       'isDailyEmpty',
       'hasNextDaily',

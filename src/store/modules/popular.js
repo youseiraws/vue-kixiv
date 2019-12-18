@@ -50,6 +50,7 @@ const getters = {
   formatedDate: (state, getters) => getters.startDate.format(dateFormat),
   type: state => state.type,
   duration: (state, getters) => state.popular[getters.formatedDate],
+  total: state => Object.values(state.popular).flat(),
   isLoading: state => state.isLoading,
   isDurationEmpty: (state, getters) =>
     _.isEmpty(state.popular[getters.formatedDate]),
@@ -69,8 +70,10 @@ const mutations = {
     }),
   [INIT_DATE]: state => (state.date = moment.utc().subtract(1, 'days')),
   [SET_DATE]: (state, date) => (state.date = date),
-  [ADD_DATE]: state => (state.date = state.date.clone().add(1, `${state.type}s`)),
-  [SUB_DATE]: state => (state.date = state.date.clone().subtract(1, `${state.type}s`)),
+  [ADD_DATE]: state =>
+    (state.date = state.date.clone().add(1, `${state.type}s`)),
+  [SUB_DATE]: state =>
+    (state.date = state.date.clone().subtract(1, `${state.type}s`)),
   [SET_TYPE]: (state, type) => (state.type = type),
   [UPDATE_DURATION]: (state, { date, newPosts }) => {
     let duration = state.popular[date.format(dateFormat)]
