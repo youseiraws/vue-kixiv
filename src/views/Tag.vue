@@ -37,7 +37,7 @@
         <post
           v-for="post in tag"
           :key="post.id"
-          :size="301"
+          :width="301"
           :post="post"
           :posts="total"
           :load-more="nextTag"
@@ -59,15 +59,15 @@ const { mapGetters, mapActions } = createNamespacedHelpers('tag')
 
 export default {
   name: 'Tag',
+  components: {
+    Container,
+    Post,
+  },
   props: {
     name: {
       type: String,
       default: '',
     },
-  },
-  components: {
-    Container,
-    Post,
   },
   data() {
     return {

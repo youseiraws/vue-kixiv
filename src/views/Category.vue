@@ -41,7 +41,7 @@
         <cover
           v-for="tag in tags"
           :key="tag.id"
-          :size="194"
+          :width="194"
           :name="tag.name"
           :color="getTagColor(tag)"
           :cover="categories[tag.name]"
@@ -59,6 +59,7 @@
 import { createNamespacedHelpers } from 'vuex'
 import _ from 'lodash'
 import { Container, Cover } from '../components'
+import { tagTypes, getTagColor } from '../util/util'
 
 const { mapGetters, mapActions } = createNamespacedHelpers('category')
 
@@ -70,43 +71,7 @@ export default {
   },
   data() {
     return {
-      tagTypes: [
-        {
-          name: 'any',
-          value: '',
-          color: '#000000',
-        },
-        {
-          name: 'general',
-          value: 0,
-          color: '#ffaaae',
-        },
-        {
-          name: 'artist',
-          value: 1,
-          color: '#cccc00',
-        },
-        {
-          name: 'copyright',
-          value: 3,
-          color: '#dd00dd',
-        },
-        {
-          name: 'character',
-          value: 4,
-          color: '#00aa00',
-        },
-        {
-          name: 'style',
-          value: 5,
-          color: '#ff2020',
-        },
-        {
-          name: 'circle',
-          value: 6,
-          color: '#00bbbb',
-        },
-      ],
+      tagTypes,
       tagType: {
         name: 'any',
         value: '',
@@ -157,7 +122,7 @@ export default {
       refreshCategory: 'REFRESH_CATEGORY',
     }),
     getTagColor(tag) {
-      return this.tagTypes.find(tagType => tagType.name === tag.type).color
+      return getTagColor(tag)
     },
     coverClick(name) {
       this.$router.push({ name: 'tag', params: { name } })

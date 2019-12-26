@@ -28,7 +28,7 @@
         <post
           v-for="post in daily"
           :key="post.id"
-          :size="301"
+          :width="301"
           :post="post"
           :posts="total"
           :load-more="prevDaily"

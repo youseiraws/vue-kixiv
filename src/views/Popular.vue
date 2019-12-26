@@ -57,7 +57,7 @@
         <post
           v-for="post in duration"
           :key="post.id"
-          :size="301"
+          :width="301"
           :post="post"
           :posts="total"
           :load-more="prevDuration"

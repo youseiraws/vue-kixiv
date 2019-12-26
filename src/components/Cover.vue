@@ -8,7 +8,7 @@
       >
         <v-img
           class="cover-img"
-          :width="size"
+          :width="width"
           :aspect-ratio="1"
           :src="getPostUrl(cover,'sample')"
           :lazy-src="getPostUrl(cover,'preview')"
@@ -28,7 +28,7 @@ import { getPostUrl } from '../util/util'
 export default {
   name: 'Cover',
   props: {
-    size: {
+    width: {
       type: Number,
     },
     name: {

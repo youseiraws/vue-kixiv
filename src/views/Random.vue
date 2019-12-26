@@ -55,7 +55,7 @@
         <post
           v-for="post in random"
           :key="post.id"
-          :size="301"
+          :width="301"
           :post="post"
           :posts="total"
           :load-more="nextRandom"
@@ -72,6 +72,7 @@
 import { createNamespacedHelpers } from 'vuex'
 import _ from 'lodash'
 import { Container, Post } from '../components'
+import { tagTypes, getTagColor } from '../util/util'
 
 const { mapGetters, mapActions } = createNamespacedHelpers('random')
 
@@ -83,38 +84,7 @@ export default {
   },
   data() {
     return {
-      tagTypes: [
-        {
-          name: 'general',
-          value: 0,
-          color: '#ffaaae',
-        },
-        {
-          name: 'artist',
-          value: 1,
-          color: '#cccc00',
-        },
-        {
-          name: 'copyright',
-          value: 3,
-          color: '#dd00dd',
-        },
-        {
-          name: 'character',
-          value: 4,
-          color: '#00aa00',
-        },
-        {
-          name: 'style',
-          value: 5,
-          color: '#ff2020',
-        },
-        {
-          name: 'circle',
-          value: 6,
-          color: '#00bbbb',
-        },
-      ],
+      tagTypes,
       pagination: 1,
       autoRefreshTimer: null,
       search: null,
@@ -162,7 +132,7 @@ export default {
       searchTag: 'SEARCH_TAG',
     }),
     getTagColor(tag) {
-      return this.tagTypes.find(tagType => tagType.value === tag.type).color
+      return getTagColor(tag)
     },
     removeItem(item) {
       this.select = this.select.filter(sel => !_.isEqual(sel, item))
