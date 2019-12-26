@@ -139,6 +139,15 @@ export default {
       vm.autoRefreshTimer = window.setInterval(() => vm.refreshTag(), 20000)
     })
   },
+  beforeRouteUpdate(to, from, next) {
+    this.initState()
+    this.pagination = this.page
+    this.postOrder = this.postOrders.find(
+      postOrder => postOrder.value === this.order,
+    )
+    this.loadTag({ name: to.params.name })
+    next()
+  },
   beforeRouteLeave(to, from, next) {
     window.clearInterval(this.autoRefreshTimer)
     next()
