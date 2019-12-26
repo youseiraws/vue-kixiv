@@ -70,7 +70,13 @@ const mutations = {
       newPosts.forEach(newPost => {
         const index = tag.findIndex(post => post.id === newPost.id)
         if (index !== -1)
-          tag.splice(index, 1, Object.assign({}, tag[index], newPost))
+          tag.splice(
+            index,
+            1,
+            Object.assign({}, tag[index], {
+              storage: { ...tag[index].storage, ...newPost.storage },
+            }),
+          )
       })
     }
   },

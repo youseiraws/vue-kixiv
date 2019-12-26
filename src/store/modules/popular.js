@@ -81,7 +81,13 @@ const mutations = {
       newPosts.forEach(newPost => {
         const index = duration.findIndex(post => post.id === newPost.id)
         if (index !== -1)
-          duration.splice(index, 1, Object.assign({}, duration[index], newPost))
+          duration.splice(
+            index,
+            1,
+            Object.assign({}, duration[index], {
+              storage: { ...duration[index].storage, ...newPost.storage },
+            }),
+          )
       })
     }
   },

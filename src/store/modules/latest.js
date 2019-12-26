@@ -75,7 +75,13 @@ const mutations = {
       newPosts.forEach(newPost => {
         const index = daily.findIndex(post => post.id === newPost.id)
         if (index !== -1)
-          daily.splice(index, 1, Object.assign({}, daily[index], newPost))
+          daily.splice(
+            index,
+            1,
+            Object.assign({}, daily[index], {
+              storage: { ...daily[index].storage, ...newPost.storage },
+            }),
+          )
       })
     }
   },

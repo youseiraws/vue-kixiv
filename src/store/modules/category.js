@@ -85,14 +85,19 @@ const mutations = {
   },
   [UPDATE_COVER]: (state, newPosts) => {
     newPosts.forEach(newPost => {
-      const oldPost = Object.entries(state.categories).find(
-        ([tag, post]) => post.id === newPost.id,
+      const oldPost = Object.values(state.categories).find(
+        post => post.id === newPost.id,
       )
       if (oldPost !== undefined)
         state.categories[oldPost[0]] = Object.assign(
           {},
           state.categories[oldPost[0]],
-          newPost,
+          {
+            storage: {
+              ...state.categories[oldPost[0]].storage,
+              ...newPost.storage,
+            },
+          },
         )
     })
   },

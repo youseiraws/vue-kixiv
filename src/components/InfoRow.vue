@@ -1,5 +1,5 @@
 <template>
-  <div id="info-row">
+  <div id="info-row" class="d-flex flex-row">
       <span>{{text}}</span>
       <v-spacer></v-spacer>
       <span>{{value}}</span>

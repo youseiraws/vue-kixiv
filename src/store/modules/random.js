@@ -72,7 +72,13 @@ const mutations = {
       newPosts.forEach(newPost => {
         const index = random.findIndex(post => post.id === newPost.id)
         if (index !== -1)
-          random.splice(index, 1, Object.assign({}, random[index], newPost))
+          random.splice(
+            index,
+            1,
+            Object.assign({}, random[index], {
+              storage: { ...random[index].storage, ...newPost.storage },
+            }),
+          )
       })
     }
   },

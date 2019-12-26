@@ -1,10 +1,20 @@
 <template>
   <div id="post">
     <v-hover #default="{hover}">
-      <v-menu open-on-hover offset-x transition="scroll-x-transition">
+      <v-menu
+        v-model="menu"
+        offset-x
+        open-on-hover
+        :close-on-content-click="false"
+        :open-delay="500"
+        :close-delay="500"
+        :nudge-right="6"
+        transition="scroll-x-transition"
+      >
         <template #activator="{on}">
           <v-card
             v-on="on"
+            outlined
             :raised="hover"
             @click="openLarger({post,posts,loadMore})"
             @contextmenu.prevent
@@ -18,9 +28,9 @@
           </v-card>
         </template>
         <template>
-          <v-card>
+          <v-card outlined :width="300">
             <v-card-text>
-              <info-row text="评分" :value="post.score"></info-row>
+              <info-row text="评分" :value="score"></info-row>
               <info-row text="评级" :value="rating"></info-row>
               <info-row text="图片尺寸" :value="resolution"></info-row>
               <info-row text="图片大小" :value="size"></info-row>
@@ -37,11 +47,10 @@
               <div v-show="isShow">
                 <v-divider></v-divider>
                 <v-card-text>
-                  <v-chip-group column>
+                  <v-chip-group column dark active-class="white">
                     <v-chip
                       v-for="tag in post.storage.tags"
                       :key="tag.id"
-                      dark
                       small
                       :color="getTagColor(tag)"
                       @click="chipClick(tag.name)"
@@ -60,16 +69,11 @@
 <script>
 import { createNamespacedHelpers } from 'vuex'
 import moment from 'moment'
-import {
-  tagTypes,
-  getTagColor,
-  getPostUrl,
-  capitalToRating,
-} from '../util/util'
-import { InfoRow } from './index'
+import { getTagColor, getPostUrl, capitalToRating } from '../util/util'
+import InfoRow from './InfoRow'
 
 const { mapMutations, mapActions } = createNamespacedHelpers('larger')
-const dateFormat = 'YYYY-MM-DD'
+const dateDisplayFormat = 'YYYY年MM月DD日'
 
 export default {
   name: 'Post',
@@ -98,11 +102,14 @@ export default {
   },
   data() {
     return {
-      tagTypes,
+      menu: false,
       isShow: false,
     }
   },
   computed: {
+    score() {
+      return this.post.score.toString()
+    },
     rating() {
       return capitalToRating(this.post.rating)
     },
@@ -111,8 +118,8 @@ export default {
     },
     size() {
       return this.post.file_size / 1024 < 1024
-        ? `${(this.file_size / 1024).toFixed(2)} KB`
-        : `${(this.file_size / 1024 ** 2).toFixed(2)} MB`
+        ? `${(this.post.file_size / 1024).toFixed(2)} KB`
+        : `${(this.post.file_size / 1024 ** 2).toFixed(2)} MB`
     },
     author() {
       const authorTag = this.post.storage.tags.find(tag => tag.type === 1)
@@ -121,9 +128,9 @@ export default {
     },
     uploadDate() {
       return moment
-        .unix(this.post.create_at)
+        .unix(this.post.created_at)
         .utc()
-        .format(dateFormat)
+        .format(dateDisplayFormat)
     },
   },
   watch: {
@@ -133,6 +140,9 @@ export default {
       },
       deep: true,
       immediate: true,
+    },
+    menu(newMenu) {
+      if (newMenu === false) this.isShow = false
     },
   },
   methods: {
@@ -145,11 +155,12 @@ export default {
       return getPostUrl(post, postType)
     },
     chipClick(name) {
+      this.menu = false
       this.$router.push({ name: 'tag', params: { name } })
     },
   },
 }
 </script>
 
-<style scoped>
+<style>
 </style>

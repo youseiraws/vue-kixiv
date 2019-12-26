@@ -3,7 +3,7 @@ import axios from 'axios'
 export default class Http {
   constructor(baseURL, timeout = 60000) {
     this.baseURL = baseURL
-    this.timeout = 60000
+    this.timeout = timeout
     this._init()
   }
 
