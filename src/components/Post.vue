@@ -67,12 +67,11 @@
 </template>
 
 <script>
-import { createNamespacedHelpers } from 'vuex'
+import { mapGetters, mapMutations, mapActions } from 'vuex'
 import moment from 'moment'
 import { getTagColor, getPostUrl, capitalToRating } from '../util/util'
 import InfoRow from './InfoRow'
 
-const { mapMutations, mapActions } = createNamespacedHelpers('larger')
 const dateDisplayFormat = 'YYYY年MM月DD日'
 
 export default {
@@ -146,8 +145,17 @@ export default {
     },
   },
   methods: {
-    ...mapMutations({ setPosts: 'SET_POSTS' }),
-    ...mapActions({ openLarger: 'OPEN_LARGER' }),
+    ...mapMutations('larger', { setPosts: 'SET_POSTS' }),
+    ...mapActions('larger', { openLarger: 'OPEN_LARGER' }),
+    ...mapActions('collection', {
+      add: 'ADD',
+      remove: 'REMOVE',
+      collections: 'COLLECTIONS',
+      like: 'LIKE',
+      dislike: 'DISLIKE',
+      black: 'BLACK',
+      unblack: 'UNBLACK',
+    }),
     getTagColor(tag) {
       return getTagColor(tag)
     },

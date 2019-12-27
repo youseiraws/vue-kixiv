@@ -6,6 +6,7 @@ import random from './modules/random'
 import popular from './modules/popular'
 import category from './modules/category'
 import tag from './modules/tag'
+import collection from './modules/collection'
 
 Vue.use(Vuex)
 
@@ -17,6 +18,7 @@ export default new Vuex.Store({
     popular,
     category,
     tag,
+    collection,
   },
   strict: process.env.NODE_ENV !== 'production',
 })
