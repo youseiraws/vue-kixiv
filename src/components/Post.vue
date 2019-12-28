@@ -38,31 +38,123 @@
               <info-row text="上传日期" :value="uploadDate"></info-row>
             </v-card-text>
             <v-card-actions>
+              <v-btn icon @click="showCollections()">
+                <v-icon v-if="hasCollected" color="red">mdi-heart</v-icon>
+                <v-icon v-else>mdi-heart-outline</v-icon>
+              </v-btn>
+              <v-btn v-if="hasBlacked" icon @click="unblack(post.id)">
+                <v-icon>mdi-minus-circle</v-icon>
+              </v-btn>
+              <v-btn v-else icon @click="black(post.id)">
+                <v-icon>mdi-minus-circle-outline</v-icon>
+              </v-btn>
               <v-spacer></v-spacer>
-              <v-btn icon @click="isShow=!isShow">
-                <v-icon>{{isShow?'mdi-chevron-up':'mdi-chevron-down'}}</v-icon>
+              <v-btn icon @click="showTags()">
+                <v-icon>{{isTagsShow?'mdi-chevron-up':'mdi-chevron-down'}}</v-icon>
               </v-btn>
             </v-card-actions>
             <v-expand-transition>
-              <div v-show="isShow">
-                <v-divider></v-divider>
-                <v-card-text>
-                  <v-chip-group column dark active-class="white">
-                    <v-chip
-                      v-for="tag in post.storage.tags"
-                      :key="tag.id"
-                      small
-                      :color="getTagColor(tag)"
-                      @click="chipClick(tag.name)"
-                    >{{tag.name}}</v-chip>
-                  </v-chip-group>
-                </v-card-text>
+              <div>
+                <div v-show="isCollectionsShow">
+                  <v-divider></v-divider>
+                  <v-list dense>
+                    <v-hover
+                      #default="{hover}"
+                      v-for="(collection,index) in collections"
+                      :key="collection.name"
+                    >
+                      <v-list-item v-if="editCollectionSwitchs[index]">
+                        <v-text-field
+                          v-model="editedCollection"
+                          dense
+                          solo
+                          single-line
+                          autofocus
+                          append-outer-icon="mdi-check"
+                          @click:append-outer="editCollection(collection,index)"
+                          @keyup.enter="editCollection(collection,index)"
+                        ></v-text-field>
+                      </v-list-item>
+                      <v-list-item v-else @click="selectCollection(collection)">
+                        <v-list-item-icon>
+                          <v-icon
+                            v-if="collection.posts.map(post=>post.id).includes(post.id)"
+                            color="yellow"
+                          >mdi-star</v-icon>
+                          <v-icon v-else>mdi-star-outline</v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-title>{{collection.name}}</v-list-item-title>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                          icon
+                          v-show="collection.name!=='默认收藏集'&&hover"
+                          @click.stop="switchEditCollection(collection,index)"
+                        >
+                          <v-icon>mdi-pencil-outline</v-icon>
+                        </v-btn>
+                        <v-btn
+                          icon
+                          v-show="collection.name!=='默认收藏集'&&hover"
+                          @click.stop="confirmRemoveCollection(collection)"
+                        >
+                          <v-icon>mdi-trash-can-outline</v-icon>
+                        </v-btn>
+                      </v-list-item>
+                    </v-hover>
+                    <v-list-item v-if="addCollectionSwitch">
+                      <v-text-field
+                        v-model="addedCollection"
+                        dense
+                        solo
+                        single-line
+                        autofocus
+                        append-outer-icon="mdi-check"
+                        @click:append-outer="addCollection()"
+                        @keyup.enter="addCollection()"
+                      ></v-text-field>
+                    </v-list-item>
+                    <v-list-item v-else @click="switchAddCollection()">
+                      <v-list-item-icon>
+                        <v-icon>mdi-book-plus</v-icon>
+                      </v-list-item-icon>
+                      <v-list-item-title>新建收藏集</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </div>
+                <div v-show="isTagsShow">
+                  <v-divider></v-divider>
+                  <v-card-text>
+                    <v-chip-group column dark active-class="white">
+                      <v-chip
+                        v-for="tag in post.storage.tags"
+                        :key="tag.id"
+                        small
+                        :color="getTagColor(tag)"
+                        @click="chipClick(tag.name)"
+                      >{{tag.name}}</v-chip>
+                    </v-chip-group>
+                  </v-card-text>
+                </div>
               </div>
             </v-expand-transition>
           </v-card>
         </template>
       </v-menu>
     </v-hover>
+    <v-dialog v-model="dialog" width="300">
+      <v-card>
+        <v-card-title>
+          <span>确定删除</span>
+          <span class="red--text">{{removedCollection.name}}</span>
+          <span>收藏集吗？</span>
+        </v-card-title>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn text @click="dialog = false">取消</v-btn>
+          <v-btn text @click="removeCollection()">确定</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -102,10 +194,18 @@ export default {
   data() {
     return {
       menu: false,
-      isShow: false,
+      isCollectionsShow: false,
+      addCollectionSwitch: false,
+      editCollectionSwitchs: [],
+      addedCollection: '',
+      editedCollection: '',
+      dialog: false,
+      removedCollection: {},
+      isTagsShow: false,
     }
   },
   computed: {
+    ...mapGetters('collection', ['collections', 'blacklist']),
     score() {
       return this.post.score.toString()
     },
@@ -131,6 +231,14 @@ export default {
         .utc()
         .format(dateDisplayFormat)
     },
+    hasCollected() {
+      return this.collections.some(collection =>
+        collection.posts.map(post => post.id).includes(this.post.id),
+      )
+    },
+    hasBlacked() {
+      return this.blacklist.posts.map(post => post.id).includes(this.post.id)
+    },
   },
   watch: {
     posts: {
@@ -141,7 +249,14 @@ export default {
       immediate: true,
     },
     menu(newMenu) {
-      if (newMenu === false) this.isShow = false
+      if (newMenu === false) {
+        this.isTagsShow = false
+        this.isCollectionsShow = false
+        this.addCollectionSwitch = false
+      }
+    },
+    collections(newCollections) {
+      this.editCollectionSwitchs = new Array(newCollections.length).fill(false)
     },
   },
   methods: {
@@ -149,8 +264,9 @@ export default {
     ...mapActions('larger', { openLarger: 'OPEN_LARGER' }),
     ...mapActions('collection', {
       add: 'ADD',
+      edit: 'EDIT',
       remove: 'REMOVE',
-      collections: 'COLLECTIONS',
+      list: 'LIST',
       like: 'LIKE',
       dislike: 'DISLIKE',
       black: 'BLACK',
@@ -166,6 +282,47 @@ export default {
       this.menu = false
       this.$router.push({ name: 'tag', params: { name } })
     },
+    showCollections() {
+      this.isTagsShow = false
+      this.isCollectionsShow = !this.isCollectionsShow
+    },
+    selectCollection(collection) {
+      if (collection.posts.map(post => post.id).includes(this.post.id))
+        this.dislike({ name: collection.name, id: this.post.id })
+      else this.like({ name: collection.name, id: this.post.id })
+    },
+    switchAddCollection() {
+      this.addCollectionSwitch = true
+    },
+    addCollection() {
+      this.addCollectionSwitch = false
+      this.add(this.addedCollection)
+      this.addedCollection = ''
+    },
+    switchEditCollection(collection, index) {
+      this.editedCollection = collection.name
+      this.editCollectionSwitchs.splice(index, 1, true)
+    },
+    editCollection(collection, index) {
+      this.editCollectionSwitchs.splice(index, 1, false)
+      this.edit({ oldName: collection.name, newName: this.editedCollection })
+    },
+    confirmRemoveCollection(collection) {
+      this.menu = false
+      this.removedCollection = collection
+      this.dialog = true
+    },
+    removeCollection() {
+      this.remove(this.removedCollection.name)
+      this.dialog = false
+    },
+    showTags() {
+      this.isCollectionsShow = false
+      this.isTagsShow = !this.isTagsShow
+    },
+  },
+  created() {
+    this.editCollectionSwitchs = new Array(this.collections.length).fill(false)
   },
 }
 </script>

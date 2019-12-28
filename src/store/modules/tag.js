@@ -112,22 +112,43 @@ const actions = {
       let result
       switch (state.order) {
         case 'random':
-          result = await api.get('/random', {
-            page: state.page,
-            tags: state.name,
-          })
+          try {
+            result = await api.get('/random', {
+              page: state.page,
+              tags: state.name,
+            })
+          } catch {
+            result = await api.get('/random', {
+              page: state.page,
+              tags: state.name,
+            })
+          }
           break
         case 'latest':
-          result = await api.get('/post', {
-            page: state.page,
-            tags: state.name,
-          })
+          try {
+            result = await api.get('/post', {
+              page: state.page,
+              tags: state.name,
+            })
+          } catch {
+            result = await api.get('/post', {
+              page: state.page,
+              tags: state.name,
+            })
+          }
           break
         case 'score':
-          result = await api.get('/post', {
-            page: state.page,
-            tags: `order:score ${state.name}`,
-          })
+          try {
+            result = await api.get('/post', {
+              page: state.page,
+              tags: `order:score ${state.name}`,
+            })
+          } catch {
+            result = await api.get('/post', {
+              page: state.page,
+              tags: `order:score ${state.name}`,
+            })
+          }
           break
       }
 
@@ -137,9 +158,16 @@ const actions = {
       const notCachedPosts = await dispatch(GET_NOT_CACHED_POSTS)
       if (!_.isEmpty(notCachedPosts)) {
         commit(NOT_YET_CACHED)
-        const result = await api.post('/cache', {
-          posts: notCachedPosts,
-        })
+        let result
+        try {
+          result = await api.post('/cache', {
+            posts: notCachedPosts,
+          })
+        } catch {
+          result = await api.post('/cache', {
+            posts: notCachedPosts,
+          })
+        }
         if (!_.isEmpty(result)) commit(UPDATE_TAG, result)
       } else commit(ALREADY_CACHED)
     }

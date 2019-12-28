@@ -108,19 +108,34 @@ const actions = {
     if (getters.isRandomEmpty) {
       commit(NOT_YET_LOADED)
       commit(NOT_YET_CACHED)
-      const result = await api.get('/random', {
-        page: state.page,
-        tags: getters.tagStr,
-      })
+      let result
+      try {
+        result = await api.get('/random', {
+          page: state.page,
+          tags: getters.tagStr,
+        })
+      } catch {
+        result = await api.get('/random', {
+          page: state.page,
+          tags: getters.tagStr,
+        })
+      }
       if (!_.isEmpty(result)) commit(ADD_POSTS, result)
       else commit(ALREADY_LOADED)
     } else {
       const notCachedPosts = await dispatch(GET_NOT_CACHED_POSTS)
       if (!_.isEmpty(notCachedPosts)) {
         commit(NOT_YET_CACHED)
-        const result = await api.post('/cache', {
-          posts: notCachedPosts,
-        })
+        let result
+        try {
+          result = await api.post('/cache', {
+            posts: notCachedPosts,
+          })
+        } catch {
+          result = await api.post('/cache', {
+            posts: notCachedPosts,
+          })
+        }
         if (!_.isEmpty(result)) commit(UPDATE_RANDOM, result)
       } else commit(ALREADY_CACHED)
     }
@@ -171,11 +186,20 @@ const actions = {
       return
     }
     commit(START_SEARCHING)
-    const result = await api.get('/tag', {
-      order: 'count',
-      limit: 7,
-      name,
-    })
+    let result
+    try {
+      result = await api.get('/tag', {
+        order: 'count',
+        limit: 7,
+        name,
+      })
+    } catch {
+      result = await api.get('/tag', {
+        order: 'count',
+        limit: 7,
+        name,
+      })
+    }
     if (!_.isEmpty(result)) commit(SET_ITEMS, result)
     commit(FINISH_SEARCHING)
   },

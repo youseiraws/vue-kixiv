@@ -108,21 +108,38 @@ const actions = {
     commit(SET_DATE, date)
     if (getters.isDurationEmpty) {
       commit(NOT_YET_CACHED)
-      const result = await api.get('/popular', {
-        type: state.type,
-        day: getters.startDate.date(),
-        month: getters.startDate.month() + 1,
-        year: getters.startDate.year(),
-      })
+      let result
+      try {
+        result = await api.get('/popular', {
+          type: state.type,
+          day: getters.startDate.date(),
+          month: getters.startDate.month() + 1,
+          year: getters.startDate.year(),
+        })
+      } catch {
+        result = await api.get('/popular', {
+          type: state.type,
+          day: getters.startDate.date(),
+          month: getters.startDate.month() + 1,
+          year: getters.startDate.year(),
+        })
+      }
       if (!_.isEmpty(result))
         commit(ADD_POSTS, { date: getters.startDate, posts: result })
     } else {
       const notCachedPosts = await dispatch(GET_NOT_CACHED_POSTS)
       if (!_.isEmpty(notCachedPosts)) {
         commit(NOT_YET_CACHED)
-        const result = await api.post('/cache', {
-          posts: notCachedPosts,
-        })
+        let result
+        try {
+          result = await api.post('/cache', {
+            posts: notCachedPosts,
+          })
+        } catch {
+          result = await api.post('/cache', {
+            posts: notCachedPosts,
+          })
+        }
         if (!_.isEmpty(result))
           commit(UPDATE_DURATION, { date: getters.startDate, newPosts: result })
       } else commit(ALREADY_CACHED)

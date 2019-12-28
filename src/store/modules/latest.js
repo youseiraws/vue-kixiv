@@ -95,10 +95,19 @@ const mutations = {
 
 const actions = {
   [REQUEST_POSTS]: async ({ state, commit }) => {
-    const result = await api.get('/post', {
-      tags: `date:${state.date}`,
-      page: state.page,
-    })
+    let result
+    try {
+      result = await api.get('/post', {
+        tags: `date:${state.date}`,
+        page: state.page,
+      })
+    } catch {
+      result = await api.get('/post', {
+        tags: `date:${state.date}`,
+        page: state.page,
+      })
+    }
+
     if (!_.isEmpty(result)) {
       commit(ADD_POSTS, result)
       commit(ADD_PAGE)
@@ -125,9 +134,16 @@ const actions = {
       const notCachedPosts = await dispatch(GET_NOT_CACHED_POSTS)
       if (!_.isEmpty(notCachedPosts)) {
         commit(NOT_YET_CACHED)
-        const result = await api.post('/cache', {
-          posts: notCachedPosts,
-        })
+        let result
+        try {
+          result = await api.post('/cache', {
+            posts: notCachedPosts,
+          })
+        } catch {
+          result = await api.post('/cache', {
+            posts: notCachedPosts,
+          })
+        }
         if (!_.isEmpty(result)) commit(UPDATE_DAILY, result)
       } else commit(ALREADY_CACHED)
     }
