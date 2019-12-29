@@ -1,6 +1,6 @@
 <template>
   <div id="larger">
-    <v-overlay class="larger-overlay" :value="overlay">
+    <v-overlay :value="overlay">
       <v-hover #default="{hover}">
         <v-carousel
           class="larger-carousel"
@@ -24,16 +24,23 @@
           </v-carousel-item>
         </v-carousel>
       </v-hover>
+      <v-btn-toggle class="larger-btns d-flex flex-column" group borderless>
+        <v-btn icon @click="showCollections()">
+          <v-icon v-if="hasCollected" color="red">mdi-heart</v-icon>
+          <v-icon v-else>mdi-heart-outline</v-icon>
+        </v-btn>
+        <v-btn>
+          <v-icon>mdi-heart-outline</v-icon>
+        </v-btn>
+      </v-btn-toggle>
     </v-overlay>
   </div>
 </template>
 
 <script>
-import { createNamespacedHelpers } from 'vuex'
+import { mapGetters, mapActions } from 'vuex'
 import _ from 'lodash'
 import { getPostUrl } from '../util/util'
-
-const { mapGetters, mapActions } = createNamespacedHelpers('larger')
 
 export default {
   name: 'Larger',
@@ -43,7 +50,13 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['overlay', 'posts', 'index', 'count', 'loadMore']),
+    ...mapGetters('larger', ['overlay', 'posts', 'index', 'count', 'loadMore']),
+    ...mapGetters('collection', ['collections', 'blacklist']),
+    hasCollected() {
+      return this.collections.some(collection =>
+        collection.posts.map(post => post.id).includes(this.post.id),
+      )
+    },
   },
   watch: {
     index(newIndex) {
@@ -55,7 +68,17 @@ export default {
     },
   },
   methods: {
-    ...mapActions({ closeLarger: 'CLOSE_LARGER' }),
+    ...mapActions('larger', { closeLarger: 'CLOSE_LARGER' }),
+    ...mapActions('collection', {
+      add: 'ADD',
+      edit: 'EDIT',
+      remove: 'REMOVE',
+      list: 'LIST',
+      like: 'LIKE',
+      dislike: 'DISLIKE',
+      black: 'BLACK',
+      unblack: 'UNBLACK',
+    }),
     getPostUrl(post, postType) {
       return getPostUrl(post, postType)
     },
@@ -66,5 +89,11 @@ export default {
 <style scoped>
 .larger-carousel {
   width: 84vw;
+}
+
+.larger-btns {
+  position: fixed;
+  top: 16px;
+  right: 16px;
 }
 </style>

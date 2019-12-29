@@ -87,7 +87,12 @@
                           >mdi-star</v-icon>
                           <v-icon v-else>mdi-star-outline</v-icon>
                         </v-list-item-icon>
-                        <v-list-item-title>{{collection.name}}</v-list-item-title>
+                        <v-list-item-title>
+                          {{collection.name}}
+                          <span
+                            class="grey--text pl-1"
+                          >{{collection.posts.length}}</span>
+                        </v-list-item-title>
                         <v-spacer></v-spacer>
                         <v-btn
                           icon

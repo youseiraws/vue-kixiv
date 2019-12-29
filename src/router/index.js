@@ -6,6 +6,10 @@ Vue.use(VueRouter)
 
 const routes = [
   {
+    path: '/',
+    redirect: { name: 'latest' },
+  },
+  {
     path: '/latest',
     name: 'latest',
     component: Latest,
