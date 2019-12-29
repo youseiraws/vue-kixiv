@@ -1,5 +1,5 @@
 <template>
-  <div id="post">
+  <div id="post" v-if="!hasBlacked">
     <v-hover #default="{hover}">
       <v-menu
         v-model="menu"
@@ -8,6 +8,7 @@
         :close-on-content-click="false"
         :open-delay="500"
         :close-delay="500"
+        :min-width="300"
         :nudge-right="6"
         transition="scroll-x-transition"
       >
@@ -48,9 +49,12 @@
               <v-btn v-else icon @click="black(post.id)">
                 <v-icon>mdi-minus-circle-outline</v-icon>
               </v-btn>
+              <v-btn v-show="couldDownload" icon @click="download()">
+                <v-icon>mdi-download</v-icon>
+              </v-btn>
               <v-spacer></v-spacer>
               <v-btn icon @click="showTags()">
-                <v-icon>{{isTagsShow?'mdi-chevron-up':'mdi-chevron-down'}}</v-icon>
+                <v-icon>mdi-tag-outline</v-icon>
               </v-btn>
             </v-card-actions>
             <v-expand-transition>
@@ -70,7 +74,7 @@
                           solo
                           single-line
                           autofocus
-                          append-outer-icon="mdi-check"
+                          append-outer-icon="mdi-check-circle-outline"
                           @click:append-outer="editCollection(collection,index)"
                           @keyup.enter="editCollection(collection,index)"
                         ></v-text-field>
@@ -108,7 +112,7 @@
                         solo
                         single-line
                         autofocus
-                        append-outer-icon="mdi-check"
+                        append-outer-icon="mdi-check-circle-outline"
                         @click:append-outer="addCollection()"
                         @keyup.enter="addCollection()"
                       ></v-text-field>
@@ -161,7 +165,12 @@
 <script>
 import { mapGetters, mapMutations, mapActions } from 'vuex'
 import moment from 'moment'
-import { getTagColor, getPostUrl, capitalToRating } from '../util/util'
+import {
+  getTagColor,
+  getPostUrl,
+  capitalToRating,
+  downloadImage,
+} from '../util/util'
 import InfoRow from './InfoRow'
 
 const dateDisplayFormat = 'YYYY年MM月DD日'
@@ -238,6 +247,9 @@ export default {
     },
     hasBlacked() {
       return this.blacklist.posts.map(post => post.id).includes(this.post.id)
+    },
+    couldDownload() {
+      return this.post.storage.file_url !== undefined
     },
   },
   watch: {
@@ -319,6 +331,10 @@ export default {
     showTags() {
       this.isCollectionsShow = false
       this.isTagsShow = !this.isTagsShow
+    },
+    download() {
+      if (this.post.storage.file_url === undefined) return
+      downloadImage(this.post.storage.file_url)
     },
   },
   created() {

@@ -1,11 +1,31 @@
 <template>
   <div id="home">
     <v-toolbar class="home-toolbar" flat>
-      <v-toolbar-title class="ml-8">
-        <v-btn-toggle v-model="tab" group borderless mandatory>
-          <v-btn v-for="tab in tabs" :key="tab.value" :value="tab.value" width="100">{{tab.text}}</v-btn>
+      <v-toolbar-title>
+        <v-btn-toggle v-model="leftTab" group borderless mandatory>
+          <v-btn
+            v-for="leftTab in leftTabs"
+            :key="leftTab.value"
+            :value="leftTab.value"
+            width="100"
+          >
+            <v-icon left>{{leftTab.icon}}</v-icon>
+            {{leftTab.text}}
+          </v-btn>
         </v-btn-toggle>
       </v-toolbar-title>
+      <v-spacer></v-spacer>
+      <v-btn-toggle v-model="rightTab" group borderless mandatory>
+        <v-btn
+          v-for="rightTab in rightTabs"
+          :key="rightTab.value"
+          :value="rightTab.value"
+          width="100"
+        >
+          <v-icon left>{{rightTab.icon}}</v-icon>
+          {{rightTab.text}}
+        </v-btn>
+      </v-btn-toggle>
     </v-toolbar>
     <div class="home-content">
       <keep-alive>
@@ -28,30 +48,47 @@ export default {
   },
   data() {
     return {
-      tab: null,
-      tabs: [
+      leftTab: {},
+      leftTabs: [
         {
           value: 'latest',
           text: '最新',
+          icon: 'mdi-new-box',
         },
         {
           value: 'random',
           text: '随机',
+          icon: 'mdi-shuffle-variant',
         },
         {
           value: 'popular',
           text: '热门',
+          icon: 'mdi-fire',
         },
         {
           value: 'category',
           text: '分类',
+          icon: 'mdi-view-grid-outline',
+        },
+      ],
+      rightTab: {},
+      rightTabs: [
+        {
+          value: 'collection',
+          text: '收藏',
+          icon: 'mdi-star',
+        },
+        {
+          value: 'setting',
+          text: '设置',
+          icon: 'mdi-settings',
         },
       ],
     }
   },
   watch: {
-    tab(newTab) {
-      this.$router.push({ name: newTab })
+    leftTab(newLeftTab) {
+      this.$router.push({ name: newLeftTab })
     },
   },
 }
@@ -63,6 +100,7 @@ export default {
   z-index: 1;
   width: 100vw;
   height: 64px;
+  padding: 0 32px;
   border-bottom: 1px solid #e0e0e0 !important;
 }
 

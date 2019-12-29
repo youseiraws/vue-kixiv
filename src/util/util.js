@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import api from '../api'
 
 const tagTypes = [
   {
@@ -65,4 +66,17 @@ function capitalToRating(rating) {
   }
 }
 
-export { tagTypes, getTagColor, getPostUrl, capitalToRating }
+async function downloadImage(url) {
+  const result = await api.download(url)
+  const blob = new Blob([result])
+  const downloadEl = document.createElement('a')
+  const href = window.URL.createObjectURL(blob)
+  downloadEl.href = href
+  downloadEl.download = url.split('/').reverse()[0]
+  document.body.appendChild(downloadEl)
+  downloadEl.click()
+  document.body.removeChild(downloadEl)
+  window.URL.revokeObjectURL(href)
+}
+
+export { tagTypes, getTagColor, getPostUrl, capitalToRating, downloadImage }

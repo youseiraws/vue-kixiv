@@ -23,4 +23,8 @@ export default class Http {
   async post(url, data) {
     return await this.http.post(url, data)
   }
+
+  async download(url) {
+    return await this.http.get(url, { responseType: 'blob' })
+  }
 }
