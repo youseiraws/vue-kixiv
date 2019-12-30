@@ -23,8 +23,6 @@ const getters = {
   overlay: state => state.overlay,
   post: state => state.post,
   posts: state => state.posts,
-  index: state => state.posts.findIndex(post => post.id === state.post.id),
-  count: state => state.posts.length,
   loadMore: state => state.loadMore,
 }
 

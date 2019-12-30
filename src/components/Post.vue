@@ -3,7 +3,7 @@
     <v-menu
       v-model="menu"
       offset-x
-      open-on-hover
+      :open-on-hover="openOnHover"
       :close-on-content-click="false"
       :open-delay="500"
       :close-delay="500"
@@ -41,13 +41,19 @@
           </v-card-actions>
           <v-expand-transition>
             <div>
-              <div v-show="isCollectionsShow">
+              <div v-if="isCollectionsShow">
                 <v-divider></v-divider>
-                <post-collection :post="post"></post-collection>
+                <post-collection
+                  :post="post"
+                  @dialog-opened="setVisibility(true)"
+                  @dialog-closed="setVisibility(false)"
+                ></post-collection>
               </div>
-              <div v-show="isTagsShow">
+              <div v-if="isTagsShow">
                 <v-divider></v-divider>
-                <post-tag :post="post"></post-tag>
+                <v-card-text>
+                  <post-tag :post="post"></post-tag>
+                </v-card-text>
               </div>
             </div>
           </v-expand-transition>
@@ -59,7 +65,7 @@
 
 <script>
 import { mapGetters, mapMutations, mapActions } from 'vuex'
-import { getTagColor, getPostUrl } from '../util/util'
+import { getPostUrl } from '../util/util'
 import PostInfo from './PostInfo'
 import PostCollection from './PostCollection'
 import PostBlackBtn from './PostBlackBtn'
@@ -98,6 +104,7 @@ export default {
   data() {
     return {
       menu: false,
+      openOnHover: true,
       isCollectionsShow: false,
       isTagsShow: false,
     }
@@ -142,6 +149,10 @@ export default {
     showTags() {
       this.isCollectionsShow = false
       this.isTagsShow = !this.isTagsShow
+    },
+    setVisibility(visible) {
+      this.menu = visible
+      this.openOnHover = !visible
     },
   },
 }

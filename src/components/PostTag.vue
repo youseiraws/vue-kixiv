@@ -13,6 +13,8 @@
 </template>
 
 <script>
+import { getTagColor } from '../util/util'
+
 export default {
   name: 'PostTag',
   props: {

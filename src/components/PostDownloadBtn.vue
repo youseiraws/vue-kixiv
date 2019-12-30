@@ -1,6 +1,6 @@
 <template>
   <div id="post-download-btn">
-    <v-btn v-show="couldDownload" icon @click="download()">
+    <v-btn v-show="couldDownload" :large="large" icon @click="download()">
       <v-icon>mdi-download</v-icon>
     </v-btn>
   </div>
@@ -12,6 +12,10 @@ import { downloadImage } from '../util/util'
 export default {
   name: 'PostDownloadBtn',
   props: {
+    large: {
+      type: Boolean,
+      default: false,
+    },
     post: {
       type: Object,
       default() {

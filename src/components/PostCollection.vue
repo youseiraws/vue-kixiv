@@ -71,7 +71,7 @@
         </v-card-title>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn text @click="dialog = false">取消</v-btn>
+          <v-btn text @click="cancel()">取消</v-btn>
           <v-btn text @click="removeCollection()">确定</v-btn>
         </v-card-actions>
       </v-card>
@@ -93,6 +93,10 @@ export default {
         return {}
       },
     },
+    menu: {
+      type: Boolean,
+      default: true,
+    },
   },
   data() {
     return {
@@ -110,6 +114,9 @@ export default {
   watch: {
     collections(newCollections) {
       this.editCollectionSwitchs = new Array(newCollections.length).fill(false)
+    },
+    menu(newMenu) {
+      if (!newMenu) this.init()
     },
   },
   methods: {
@@ -142,18 +149,28 @@ export default {
       this.edit({ oldName: collection.name, newName: this.editedCollection })
     },
     confirmRemoveCollection(collection) {
-      this.menu = false
+      this.$emit('dialog-opened')
       this.removedCollection = collection
       this.dialog = true
     },
     removeCollection() {
       this.remove(this.removedCollection.name)
       this.dialog = false
+      this.$emit('dialog-closed')
+    },
+    cancel() {
+      this.dialog = false
+      this.$emit('dialog-closed')
+    },
+    init() {
+      this.addCollectionSwitch = false
+      this.editCollectionSwitchs = new Array(this.collections.length).fill(
+        false,
+      )
     },
   },
-  activated() {
-    this.addCollectionSwitch = false
-    this.editCollectionSwitchs = new Array(this.collections.length).fill(false)
+  created() {
+    this.init()
   },
 }
 </script>
