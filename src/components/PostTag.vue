@@ -1,0 +1,39 @@
+<template>
+  <div id="post-tag">
+    <v-chip-group column dark active-class="white">
+      <v-chip
+        v-for="tag in post.storage.tags"
+        :key="tag.id"
+        small
+        :color="getTagColor(tag)"
+        @click="chipClick(tag.name)"
+      >{{tag.name}}</v-chip>
+    </v-chip-group>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'PostTag',
+  props: {
+    post: {
+      type: Object,
+      default() {
+        return {}
+      },
+    },
+  },
+  methods: {
+    getTagColor(tag) {
+      return getTagColor(tag)
+    },
+    chipClick(name) {
+      this.menu = false
+      this.$router.push({ name: 'tag', params: { name } })
+    },
+  },
+}
+</script>
+
+<style>
+</style>

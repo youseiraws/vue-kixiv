@@ -24,15 +24,63 @@
           </v-carousel-item>
         </v-carousel>
       </v-hover>
-      <v-btn-toggle class="larger-btns d-flex flex-column" group borderless>
-        <v-btn icon @click="showCollections()">
-          <v-icon v-if="hasCollected" color="red">mdi-heart</v-icon>
-          <v-icon v-else>mdi-heart-outline</v-icon>
-        </v-btn>
-        <v-btn>
-          <v-icon>mdi-heart-outline</v-icon>
-        </v-btn>
-      </v-btn-toggle>
+      <v-item-group class="larger-actions d-flex flex-column">
+        <v-item>
+          <post-hover-btn>
+            <template #activator="{on}">
+              <v-btn v-on="on" icon>
+                <v-icon>mdi-information</v-icon>
+              </v-btn>
+            </template>
+            <template>
+              <v-card outlined :width="300">
+                <v-card-text>
+                  <post-info :post="post"></post-info>
+                </v-card-text>
+              </v-card>
+            </template>
+          </post-hover-btn>
+        </v-item>
+        <v-item>
+          <post-hover-btn>
+            <template #activator="{on}">
+              <v-btn v-on="on" icon>
+                <v-icon v-if="hasCollected" color="red">mdi-heart</v-icon>
+                <v-icon v-else>mdi-heart-outline</v-icon>
+              </v-btn>
+            </template>
+            <template>
+              <v-card outlined :width="300">
+                <v-card-text>
+                  <post-collection :post="post"></post-collection>
+                </v-card-text>
+              </v-card>
+            </template>
+          </post-hover-btn>
+        </v-item>
+        <v-item>
+          <post-black-btn :post="post"></post-black-btn>
+        </v-item>
+        <v-item>
+          <post-download-btn :post="post"></post-download-btn>
+        </v-item>
+        <v-item>
+          <post-hover-btn>
+            <template #activator="{on}">
+              <v-btn v-on="on" icon>
+                <v-icon>mdi-tag-outline</v-icon>
+              </v-btn>
+            </template>
+            <template>
+              <v-card outlined :width="300">
+                <v-card-text>
+                  <post-tag :post="post"></post-tag>
+                </v-card-text>
+              </v-card>
+            </template>
+          </post-hover-btn>
+        </v-item>
+      </v-item-group>
     </v-overlay>
   </div>
 </template>
@@ -41,9 +89,25 @@
 import { mapGetters, mapActions } from 'vuex'
 import _ from 'lodash'
 import { getPostUrl } from '../util/util'
+import {
+  PostInfo,
+  PostCollection,
+  PostBlackBtn,
+  PostDownloadBtn,
+  PostTag,
+  PostHoverBtn,
+} from '../components'
 
 export default {
   name: 'Larger',
+  components: {
+    PostInfo,
+    PostCollection,
+    PostBlackBtn,
+    PostDownloadBtn,
+    PostTag,
+    PostHoverBtn,
+  },
   data() {
     return {
       i: 0,
@@ -52,6 +116,9 @@ export default {
   computed: {
     ...mapGetters('larger', ['overlay', 'posts', 'index', 'count', 'loadMore']),
     ...mapGetters('collection', ['collections', 'blacklist']),
+    post() {
+      return this.posts[i]
+    },
     hasCollected() {
       return this.collections.some(collection =>
         collection.posts.map(post => post.id).includes(this.post.id),
@@ -83,6 +150,9 @@ export default {
       return getPostUrl(post, postType)
     },
   },
+  activated() {
+    this.i = this.index
+  },
 }
 </script>
 
@@ -91,7 +161,7 @@ export default {
   width: 84vw;
 }
 
-.larger-btns {
+.larger-actions {
   position: fixed;
   top: 16px;
   right: 16px;

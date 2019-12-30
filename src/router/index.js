@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import { Latest, Random, Popular, Category, Tag } from '../views'
+import { Latest, Random, Popular, Category, Tag, Setting } from '../views'
 
 Vue.use(VueRouter)
 
@@ -34,6 +34,11 @@ const routes = [
     name: 'tag',
     component: Tag,
     props: true,
+  },
+  {
+    path: '/setting',
+    name: 'setting',
+    component: Setting,
   },
 ]
 

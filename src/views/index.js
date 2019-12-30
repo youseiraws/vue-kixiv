@@ -5,5 +5,6 @@ import Random from './Random'
 import Popular from './Popular'
 import Category from './Category'
 import Tag from './Tag'
+import Setting from './Setting'
 
-export { Home, Larger, Latest, Random, Popular, Category, Tag }
+export { Home, Larger, Latest, Random, Popular, Category, Tag, Setting }

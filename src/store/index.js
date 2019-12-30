@@ -7,6 +7,7 @@ import popular from './modules/popular'
 import category from './modules/category'
 import tag from './modules/tag'
 import collection from './modules/collection'
+import setting from './modules/setting'
 
 Vue.use(Vuex)
 
@@ -19,6 +20,7 @@ export default new Vuex.Store({
     category,
     tag,
     collection,
+    setting,
   },
   strict: process.env.NODE_ENV !== 'production',
 })
