@@ -39,8 +39,7 @@
           :key="post.id"
           :width="301"
           :post="post"
-          :posts="total"
-          :load-more="nextTag"
+          @post-clicked="clickPost(post)"
         ></post>
       </template>
       <template #footer-title>
@@ -51,11 +50,9 @@
 </template>
 
 <script>
-import { createNamespacedHelpers } from 'vuex'
+import { mapGetters, mapMutations, mapActions } from 'vuex'
 import _ from 'lodash'
 import { Container, Post } from '../components'
-
-const { mapGetters, mapActions } = createNamespacedHelpers('tag')
 
 export default {
   name: 'Tag',
@@ -94,7 +91,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters([
+    ...mapGetters('tag', [
       'page',
       'size',
       'order',
@@ -119,7 +116,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions({
+    ...mapActions('tag', {
       initState: 'INIT_STATE',
       loadTag: 'LOAD_TAG',
       prevTag: 'PREV_TAG',
@@ -127,6 +124,12 @@ export default {
       sortTag: 'SORT_TAG',
       refreshTag: 'REFRESH_TAG',
     }),
+    ...mapMutations('larger', { setPosts: 'SET_POSTS' }),
+    ...mapActions('larger', { openLarger: 'OPEN_LARGER' }),
+    clickPost(post) {
+      this.setPosts(this.total)
+      this.openLarger(post, this.total, this.nextTag)
+    },
   },
   beforeRouteEnter(to, from, next) {
     next(vm => {

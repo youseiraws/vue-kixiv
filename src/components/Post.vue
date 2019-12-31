@@ -12,7 +12,7 @@
       transition="scroll-x-transition"
     >
       <template #activator="{on}">
-        <v-card v-on="on" outlined @click="openLarger({post,posts,loadMore})" @contextmenu.prevent>
+        <v-card v-on="on" outlined @click="$emit('post-clicked')" @contextmenu.prevent>
           <v-img
             :contain="contain"
             :width="width"
@@ -64,7 +64,7 @@
 </template>
 
 <script>
-import { mapGetters, mapMutations, mapActions } from 'vuex'
+import { mapGetters } from 'vuex'
 import { getPostUrl } from '../util/util'
 import PostInfo from './PostInfo'
 import PostCollection from './PostCollection'
@@ -91,15 +91,6 @@ export default {
         return {}
       },
     },
-    posts: {
-      type: Array,
-      default() {
-        return []
-      },
-    },
-    loadMore: {
-      type: Function,
-    },
   },
   data() {
     return {
@@ -122,13 +113,6 @@ export default {
     },
   },
   watch: {
-    posts: {
-      handler(newPosts) {
-        this.setPosts(newPosts)
-      },
-      deep: true,
-      immediate: true,
-    },
     menu(newMenu) {
       if (newMenu === false) {
         this.isTagsShow = false
@@ -137,8 +121,6 @@ export default {
     },
   },
   methods: {
-    ...mapMutations('larger', { setPosts: 'SET_POSTS' }),
-    ...mapActions('larger', { openLarger: 'OPEN_LARGER' }),
     getPostUrl(post, postType) {
       return getPostUrl(post, postType)
     },

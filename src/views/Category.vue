@@ -45,7 +45,7 @@
           :name="tag.name"
           :color="getTagColor(tag)"
           :cover="categories[tag.name]"
-          @cover-click="coverClick"
+          @cover-clicked="clickCover"
         ></cover>
       </template>
       <template #footer-title>
@@ -124,7 +124,7 @@ export default {
     getTagColor(tag) {
       return getTagColor(tag)
     },
-    coverClick(name) {
+    clickCover(name) {
       this.$router.push({ name: 'tag', params: { name } })
     },
   },

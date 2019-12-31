@@ -30,8 +30,7 @@
           :key="post.id"
           :width="301"
           :post="post"
-          :posts="total"
-          :load-more="prevDaily"
+          @post-clicked="clickPost(post)"
         ></post>
       </template>
     </container>
@@ -39,11 +38,10 @@
 </template>
 
 <script>
-import { createNamespacedHelpers } from 'vuex'
+import { mapGetters, mapMutations, mapActions } from 'vuex'
 import moment from 'moment'
 import { Container, Post } from '../components'
 
-const { mapGetters, mapActions } = createNamespacedHelpers('latest')
 const dateFormat = 'YYYY-MM-DD'
 const dateDisplayFormat = 'YYYY年MM月DD日'
 
@@ -66,7 +64,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters([
+    ...mapGetters('latest', [
       'date',
       'daily',
       'total',
@@ -90,12 +88,18 @@ export default {
     },
   },
   methods: {
-    ...mapActions({
+    ...mapActions('latest', {
       loadDaily: 'LOAD_DAILY',
       prevDaily: 'PREV_DAILY',
       nextDaily: 'NEXT_DAILY',
       refreshDaily: 'REFRESH_DAILY',
     }),
+    ...mapMutations('larger', { setPosts: 'SET_POSTS' }),
+    ...mapActions('larger', { openLarger: 'OPEN_LARGER' }),
+    clickPost(post) {
+      this.setPosts(this.total)
+      this.openLarger(post, this.total, this.prevDaily)
+    },
   },
   created() {
     this.loadDaily()

@@ -57,8 +57,7 @@
           :key="post.id"
           :width="301"
           :post="post"
-          :posts="total"
-          :load-more="nextRandom"
+          @post-clicked="clickPost(post)"
         ></post>
       </template>
       <template #footer-title>
@@ -69,12 +68,10 @@
 </template>
 
 <script>
-import { createNamespacedHelpers } from 'vuex'
+import { mapGetters, mapMutations, mapActions } from 'vuex'
 import _ from 'lodash'
 import { Container, Post } from '../components'
 import { tagTypes, getTagColor } from '../util/util'
-
-const { mapGetters, mapActions } = createNamespacedHelpers('random')
 
 export default {
   name: 'Random',
@@ -94,7 +91,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters([
+    ...mapGetters('random', [
       'page',
       'size',
       'random',
@@ -123,7 +120,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions({
+    ...mapActions('random', {
       loadRandom: 'LOAD_RANDOM',
       prevRandom: 'PREV_RANDOM',
       nextRandom: 'NEXT_RANDOM',
@@ -131,6 +128,12 @@ export default {
       refreshRandom: 'REFRESH_RANDOM',
       searchTag: 'SEARCH_TAG',
     }),
+    ...mapMutations('larger', { setPosts: 'SET_POSTS' }),
+    ...mapActions('larger', { openLarger: 'OPEN_LARGER' }),
+    clickPost(post) {
+      this.setPosts(this.total)
+      this.openLarger(post, this.total, this.nextRandom)
+    },
     getTagColor(tag) {
       return getTagColor(tag)
     },

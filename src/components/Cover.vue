@@ -4,7 +4,7 @@
       <v-card
         class="cover-card"
         :raised="hover"
-        @click="$emit('cover-click',name)"
+        @click="$emit('cover-clicked',name)"
       >
         <v-img
           class="cover-img"

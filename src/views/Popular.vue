@@ -59,8 +59,7 @@
           :key="post.id"
           :width="301"
           :post="post"
-          :posts="total"
-          :load-more="prevDuration"
+          @post-clicked="clickPost(post)"
         ></post>
       </template>
     </container>
@@ -68,11 +67,10 @@
 </template>
 
 <script>
-import { createNamespacedHelpers } from 'vuex'
+import { mapGetters, mapMutations, mapActions } from 'vuex'
 import moment from 'moment'
 import { Container, Post } from '../components'
 
-const { mapGetters, mapActions } = createNamespacedHelpers('popular')
 const dateFormat = 'YYYY-MM-DD'
 const dateDisplayFormat = 'YYYY年MM月DD日'
 const monthDisplayFormat = 'YYYY年MM月'
@@ -116,7 +114,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters([
+    ...mapGetters('popular', [
       'date',
       'type',
       'duration',
@@ -160,13 +158,19 @@ export default {
     },
   },
   methods: {
-    ...mapActions({
+    ...mapActions('popular', {
       loadDuration: 'LOAD_DURATION',
       prevDuration: 'PREV_DURATION',
       nextDuration: 'NEXT_DURATION',
       searchDuration: 'SEARCH_DURATION',
       refreshDuration: 'REFRESH_DURATION',
     }),
+    ...mapMutations('larger', { setPosts: 'SET_POSTS' }),
+    ...mapActions('larger', { openLarger: 'OPEN_LARGER' }),
+    clickPost(post) {
+      this.setPosts(this.total)
+      this.openLarger(post, this.total, this.prevDuration)
+    },
   },
   created() {
     this.loadDuration()
