@@ -2,87 +2,91 @@
   <div id="larger">
     <v-overlay :value="overlay">
       <v-hover #default="{hover}">
-        <v-carousel
-          class="larger-carousel"
-          v-model="indexModel"
-          :cycle="false"
-          :continuous="false"
-          height="100%"
-          hide-delimiters
-          hide-delimiter-background
-          show-arrows-on-hover
-        >
-          <v-carousel-item v-for="post in unblackedPosts" :key="post.id">
-            <v-card>
-              <v-img
-                :aspect-ratio="16/9"
-                :src="getPostUrl(post,'file')"
-                :lazy-src="getPostUrl(post,'jpeg')"
-                @click="closeLarger"
-              ></v-img>
-            </v-card>
-          </v-carousel-item>
-        </v-carousel>
-      </v-hover>
-      <v-item-group class="larger-actions d-flex flex-column justify-space-between">
-        <v-item>
-          <post-hover-btn large>
-            <template #icon>
-              <v-icon>mdi-information-outline</v-icon>
-            </template>
-            <template>
-              <v-card outlined :width="300">
-                <v-card-text>
-                  <post-info :post="currentPost"></post-info>
-                </v-card-text>
-              </v-card>
-            </template>
-          </post-hover-btn>
-        </v-item>
-        <v-item>
-          <post-hover-btn
-            large
-            :menu="menu"
-            :open-on-hover="openOnHover"
-            @menu-changed="changeMenu"
+        <div>
+          <v-carousel
+            class="larger-carousel"
+            v-model="indexModel"
+            :cycle="!hover&&cycle"
+            :interval="interval"
+            :continuous="false"
+            height="100%"
+            hide-delimiters
+            hide-delimiter-background
+            show-arrows-on-hover
           >
-            <template #icon>
-              <v-icon v-if="hasCollected" color="red">mdi-heart</v-icon>
-              <v-icon v-else>mdi-heart-outline</v-icon>
-            </template>
-            <template>
-              <v-card outlined :width="300">
-                <post-collection
-                  :post="currentPost"
-                  :menu="menu"
-                  @dialog-opened="setVisibility(true)"
-                  @dialog-closed="setVisibility(false)"
-                ></post-collection>
+            <v-carousel-item v-for="post in unblackedPosts" :key="post.id">
+              <v-card>
+                <v-img
+                  :contain="contain"
+                  :aspect-ratio="16/9"
+                  :src="getPostUrl(post,'file')"
+                  :lazy-src="getPostUrl(post,'jpeg')"
+                  @click="closeLarger()"
+                ></v-img>
               </v-card>
-            </template>
-          </post-hover-btn>
-        </v-item>
-        <v-item>
-          <post-black-btn :post="currentPost" large @post-blacked="setIndex()"></post-black-btn>
-        </v-item>
-        <v-item>
-          <post-download-btn :post="currentPost" large></post-download-btn>
-        </v-item>
-        <v-item>
-          <post-hover-btn large>
-            <template #icon>
-              <v-icon>mdi-tag-outline</v-icon>
-            </template>
-            <template>
-              <v-card outlined :width="300">
-                <v-card-text>
-                  <post-tag :post="currentPost"></post-tag>
-                </v-card-text>
-              </v-card>
-            </template>
-          </post-hover-btn>
-        </v-item>
-      </v-item-group>
+            </v-carousel-item>
+          </v-carousel>
+          <v-item-group class="larger-actions d-flex flex-column justify-space-between">
+            <v-item>
+              <post-hover-btn large>
+                <template #icon>
+                  <v-icon>mdi-information-outline</v-icon>
+                </template>
+                <template>
+                  <v-card outlined :width="300">
+                    <v-card-text>
+                      <post-info :post="currentPost"></post-info>
+                    </v-card-text>
+                  </v-card>
+                </template>
+              </post-hover-btn>
+            </v-item>
+            <v-item>
+              <post-hover-btn
+                large
+                :menu="menu"
+                :open-on-hover="openOnHover"
+                @menu-changed="changeMenu"
+              >
+                <template #icon>
+                  <v-icon v-if="hasCollected" color="red">mdi-heart</v-icon>
+                  <v-icon v-else>mdi-heart-outline</v-icon>
+                </template>
+                <template>
+                  <v-card outlined :width="300">
+                    <post-collection
+                      :post="currentPost"
+                      :menu="menu"
+                      @dialog-opened="setVisibility(true)"
+                      @dialog-closed="setVisibility(false)"
+                    ></post-collection>
+                  </v-card>
+                </template>
+              </post-hover-btn>
+            </v-item>
+            <v-item>
+              <post-black-btn :post="currentPost" large @post-blacked="closeLarger()"></post-black-btn>
+            </v-item>
+            <v-item>
+              <post-download-btn :post="currentPost" large></post-download-btn>
+            </v-item>
+            <v-item>
+              <post-hover-btn large>
+                <template #icon>
+                  <v-icon>mdi-tag-outline</v-icon>
+                </template>
+                <template>
+                  <v-card outlined :width="300">
+                    <v-card-text>
+                      <post-tag :post="currentPost" @tag-clicked="closeLarger()"></post-tag>
+                    </v-card-text>
+                  </v-card>
+                </template>
+              </post-hover-btn>
+            </v-item>
+          </v-item-group>
+        </div>
+      </v-hover>
     </v-overlay>
   </div>
 </template>
@@ -120,6 +124,7 @@ export default {
   computed: {
     ...mapGetters('larger', ['overlay', 'post', 'posts', 'loadMore']),
     ...mapGetters('collection', ['collections', 'blacklist']),
+    ...mapGetters('setting', ['contain', 'carouselsInterval']),
     unblackedPosts() {
       return this.posts.filter(
         post => !this.blacklist.posts.map(post => post.id).includes(post.id),
@@ -138,6 +143,12 @@ export default {
       return this.collections.some(collection =>
         collection.posts.map(post => post.id).includes(this.currentPost.id),
       )
+    },
+    cycle() {
+      return this.carouselsInterval !== 0
+    },
+    interval() {
+      if (this.carouselsInterval !== 0) return this.carouselsInterval * 1000
     },
   },
   watch: {
@@ -171,9 +182,6 @@ export default {
     setVisibility(visible) {
       this.menu = visible
       this.openOnHover = !visible
-    },
-    setIndex() {
-      this.indexModel = this.indexModel + 1
     },
   },
 }

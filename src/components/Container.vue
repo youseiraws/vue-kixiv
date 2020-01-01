@@ -133,6 +133,7 @@ export default {
 
 .container-div {
   display: grid;
+  justify-items: center;
 }
 
 .container-div-indicator {

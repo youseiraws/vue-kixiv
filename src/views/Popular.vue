@@ -146,6 +146,9 @@ export default {
     },
   },
   watch: {
+    total(newTotal) {
+      this.setPosts(newTotal)
+    },
     pickerDate(newPickerDate) {
       this.menu = false
       this.loadDuration(moment.utc(newPickerDate, dateFormat))
@@ -168,8 +171,7 @@ export default {
     ...mapMutations('larger', { setPosts: 'SET_POSTS' }),
     ...mapActions('larger', { openLarger: 'OPEN_LARGER' }),
     clickPost(post) {
-      this.setPosts(this.total)
-      this.openLarger(post, this.total, this.prevDuration)
+      this.openLarger({ post, posts: this.total, loadMore: this.prevDuration })
     },
   },
   created() {

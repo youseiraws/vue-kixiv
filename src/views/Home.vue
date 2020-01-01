@@ -1,30 +1,14 @@
 <template>
   <div id="home">
     <v-toolbar class="home-toolbar" flat>
-      <v-toolbar-title>
-        <v-btn-toggle v-model="leftTab" group borderless mandatory>
-          <v-btn
-            v-for="leftTab in leftTabs"
-            :key="leftTab.value"
-            :value="leftTab.value"
-            width="100"
-          >
-            <v-icon left>{{leftTab.icon}}</v-icon>
-            {{leftTab.text}}
+      <v-btn-toggle class="home-actions d-flex" v-model="tab" group borderless mandatory>
+        <template v-for="tab in tabs">
+          <v-spacer v-if="tab.value==='spacer'" :key="tab.value"></v-spacer>
+          <v-btn v-else :key="tab.value" :value="tab.value" width="100">
+            <v-icon left>{{tab.icon}}</v-icon>
+            {{tab.text}}
           </v-btn>
-        </v-btn-toggle>
-      </v-toolbar-title>
-      <v-spacer></v-spacer>
-      <v-btn-toggle v-model="rightTab" group borderless mandatory>
-        <v-btn
-          v-for="rightTab in rightTabs"
-          :key="rightTab.value"
-          :value="rightTab.value"
-          width="100"
-        >
-          <v-icon left>{{rightTab.icon}}</v-icon>
-          {{rightTab.text}}
-        </v-btn>
+        </template>
       </v-btn-toggle>
     </v-toolbar>
     <div class="home-content">
@@ -48,8 +32,8 @@ export default {
   },
   data() {
     return {
-      leftTab: {},
-      leftTabs: [
+      tab: '',
+      tabs: [
         {
           value: 'latest',
           text: '最新',
@@ -68,11 +52,11 @@ export default {
         {
           value: 'category',
           text: '分类',
-          icon: 'mdi-view-grid-outline',
+          icon: 'mdi-view-grid',
         },
-      ],
-      rightTab: {},
-      rightTabs: [
+        {
+          value: 'spacer',
+        },
         {
           value: 'collection',
           text: '收藏',
@@ -87,8 +71,8 @@ export default {
     }
   },
   watch: {
-    leftTab(newLeftTab) {
-      this.$router.push({ name: newLeftTab })
+    tab(newTab) {
+      this.$router.push({ name: newTab })
     },
   },
 }
@@ -102,6 +86,10 @@ export default {
   height: 64px;
   padding: 0 32px;
   border-bottom: 1px solid #e0e0e0 !important;
+}
+
+.home-actions {
+  width: 100vw;
 }
 
 .home-content {

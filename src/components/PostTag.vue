@@ -6,7 +6,7 @@
         :key="tag.id"
         small
         :color="getTagColor(tag)"
-        @click="chipClick(tag.name)"
+        @click="clickTag(tag.name)"
       >{{tag.name}}</v-chip>
     </v-chip-group>
   </div>
@@ -29,8 +29,8 @@ export default {
     getTagColor(tag) {
       return getTagColor(tag)
     },
-    chipClick(name) {
-      this.menu = false
+    clickTag(name) {
+      this.$emit('tag-clicked')
       this.$router.push({ name: 'tag', params: { name } })
     },
   },
