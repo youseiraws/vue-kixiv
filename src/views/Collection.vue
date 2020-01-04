@@ -101,6 +101,7 @@
                 :width="301"
                 :post="post"
                 :disabled="showCheckbox"
+                @post-clicked="clickPost(post)"
               >
                 <template #action>
                   <v-checkbox
@@ -137,12 +138,11 @@
 </template>
 
 <script>
-import { createNamespacedHelpers } from 'vuex'
+import { mapGetters, mapActions } from 'vuex'
 import moment from 'moment'
 import { Container, Post } from '../components'
 import { downloadImages } from '../util/util'
 
-const { mapGetters, mapActions } = createNamespacedHelpers('collection')
 const dateDisplayFormat = 'YYYYMMDD-HHmmss'
 
 export default {
@@ -154,7 +154,6 @@ export default {
   data() {
     return {
       tab: '默认收藏集',
-      size: 20,
       pagination: 1,
       addCollectionSwitch: false,
       editCollectionSwitchs: [],
@@ -168,7 +167,8 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['collections', 'blacklist', 'isLoading']),
+    ...mapGetters('collection', ['collections', 'blacklist', 'isLoading']),
+    ...mapGetters('setting', ['pageSize']),
     totalCollections() {
       if (this.collections !== undefined && this.blacklist !== undefined)
         return [...this.collections, this.blacklist]
@@ -182,13 +182,13 @@ export default {
     currentPosts() {
       if (this.currentCollection === undefined) return []
       return this.currentCollection.posts.slice(
-        (this.pagination - 1) * this.size,
-        this.pagination * this.size,
+        (this.pagination - 1) * this.pageSize,
+        this.pagination * this.pageSize,
       )
     },
     currentLength() {
       if (this.currentCollection === undefined) return 0
-      return Math.ceil(this.currentCollection.posts.length / this.size)
+      return Math.ceil(this.currentCollection.posts.length / this.pageSize)
     },
     unblackedPosts() {
       return this.currentPosts.filter(
@@ -229,13 +229,14 @@ export default {
     },
   },
   methods: {
-    ...mapActions({
+    ...mapActions('collection', {
       add: 'ADD',
       edit: 'EDIT',
       remove: 'REMOVE',
       like: 'LIKE',
       dislike: 'DISLIKE',
     }),
+    ...mapActions('larger', { openLarger: 'OPEN_LARGER' }),
     prevCollection() {
       this.pagination--
     },
@@ -287,6 +288,9 @@ export default {
         this.checkeds = this.checkeds.filter(
           post => !this.unblackedPosts.map(post => post.id).includes(post.id),
         )
+    },
+    clickPost(post) {
+      this.openLarger({ post, posts: this.currentCollection.posts })
     },
     download() {
       this.showCheckbox = !this.showCheckbox

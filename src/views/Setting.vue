@@ -16,7 +16,7 @@
 
           <span>轮播间隔秒数</span>
           <v-slider
-            class="action-control action-control-interval d-flex align-center"
+            class="action-control action-slider d-flex align-center"
             v-model="carouselsIntervalModel"
             :min="0"
             :max="60"
@@ -26,8 +26,30 @@
           >
             <template v-slot:append>
               <v-text-field
-                class="action-input-interval"
+                class="action-short-input"
                 v-model="carouselsIntervalModel"
+                dense
+                outlined
+                single-line
+                hide-details
+              ></v-text-field>
+            </template>
+          </v-slider>
+
+          <span>收藏每页图片数</span>
+          <v-slider
+            class="action-control action-slider d-flex align-center"
+            v-model="pageSizeModel"
+            :min="1"
+            :max="60"
+            thumb-label="always"
+            hide-details
+            validate-on-blur
+          >
+            <template v-slot:append>
+              <v-text-field
+                class="action-short-input"
+                v-model="pageSizeModel"
                 dense
                 outlined
                 single-line
@@ -56,10 +78,11 @@ export default {
     return {
       containModel: false,
       carouselsIntervalModel: 6,
+      pageSizeModel: 20,
     }
   },
   computed: {
-    ...mapGetters(['contain', 'carouselsInterval']),
+    ...mapGetters(['contain', 'carouselsInterval', 'pageSize']),
     containText() {
       return this.containModel ? 'CONTAIN' : 'COVER'
     },
@@ -71,16 +94,21 @@ export default {
     carouselsIntervalModel(newCarouselsIntervalModel) {
       this.setCarouselsInterval(newCarouselsIntervalModel)
     },
+    pageSizeModel(newPageSizeModel) {
+      this.setPageSize(newPageSizeModel)
+    },
   },
   methods: {
     ...mapMutations({
       setContain: 'SET_CONTAIN',
       setCarouselsInterval: 'SET_CAROUSELS_INTERVAL',
+      setPageSize: 'SET_PAGE_SIZE',
     }),
   },
   created() {
     this.containModel = this.contain
     this.carouselsIntervalModel = this.carouselsInterval
+    this.pageSizeModel = this.pageSize
   },
 }
 </script>
@@ -99,11 +127,11 @@ export default {
   justify-self: start;
 }
 
-.action-control-interval {
+.action-slider {
   width: 200px;
 }
 
-.action-input-interval {
+.action-short-input {
   width: 60px;
 }
 </style>
