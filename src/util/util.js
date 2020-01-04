@@ -1,4 +1,6 @@
 import _ from 'lodash'
+import JSZip from 'jszip'
+import { saveAs } from 'file-saver'
 import api from '../api'
 
 const tagTypes = [
@@ -67,16 +69,33 @@ function capitalToRating(rating) {
 }
 
 async function downloadImage(url) {
-  const result = await api.download(url)
-  const blob = new Blob([result])
-  const downloadEl = document.createElement('a')
-  const href = window.URL.createObjectURL(blob)
-  downloadEl.href = href
-  downloadEl.download = url.split('/').reverse()[0]
-  document.body.appendChild(downloadEl)
-  downloadEl.click()
-  document.body.removeChild(downloadEl)
-  window.URL.revokeObjectURL(href)
+  saveAs(url, url.split('/').reverse()[0])
 }
 
-export { tagTypes, getTagColor, getPostUrl, capitalToRating, downloadImage }
+async function downloadImages(urls, name) {
+  if (_.isEmpty(urls)) return
+  if (urls.length === 1) {
+    await downloadImage(urls[0])
+    return
+  }
+  const zip = new JSZip()
+  await Promise.all(
+    urls.map(async url => {
+      const result = await api.download(url)
+      const blob = new Blob([result])
+      zip.file(url.split('/').reverse()[0], blob, { base64: true })
+    }),
+  )
+  zip
+    .generateAsync({ type: 'blob' })
+    .then(content => saveAs(content, `${name}.zip`))
+}
+
+export {
+  tagTypes,
+  getTagColor,
+  getPostUrl,
+  capitalToRating,
+  downloadImage,
+  downloadImages,
+}

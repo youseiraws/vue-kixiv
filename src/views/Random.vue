@@ -27,6 +27,7 @@
             rounded
             outlined
             return-object
+            hide-details
           >
             <template #append>
               <span></span>

@@ -34,7 +34,15 @@
               </v-list>
             </template>
           </v-menu>
-          <v-text-field class="ml-8" v-model="keyword" dense single-line rounded outlined></v-text-field>
+          <v-text-field
+            class="ml-8"
+            v-model="keyword"
+            dense
+            single-line
+            rounded
+            outlined
+            hide-details
+          ></v-text-field>
         </div>
       </template>
       <template #content v-if="!isTagEmpty">

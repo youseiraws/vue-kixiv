@@ -1,7 +1,7 @@
 <template>
   <div id="container">
     <v-card :loading="isLoading" outlined class="container-card mx-auto">
-      <v-card-title class="container-card-header d-flex flex-row">
+      <v-card-title class="container-card-header" style="height:84px">
         <div class="container-div-indicator">
           <slot name="header-left-indicator">
             <v-btn
@@ -138,11 +138,5 @@ export default {
 
 .container-div-indicator {
   width: 52px;
-}
-
-.container-card-header,
-.container-card-footer {
-  width: 100%;
-  text-align: center;
 }
 </style>

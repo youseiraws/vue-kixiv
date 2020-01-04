@@ -1,5 +1,5 @@
 <template>
-  <div id="post" v-if="!hasBlacked">
+  <div id="post" v-if="!hasBlacked||showBlacked">
     <v-menu
       v-model="menu"
       offset-x
@@ -9,6 +9,7 @@
       :close-delay="500"
       :min-width="300"
       :nudge-right="6"
+      :disabled="disabled"
       transition="scroll-x-transition"
     >
       <template #activator="{on}">
@@ -19,7 +20,9 @@
             :aspect-ratio="16/9"
             :src="getPostUrl(post,'sample')"
             :lazy-src="getPostUrl(post,'preview')"
-          ></v-img>
+          >
+            <slot name="action"></slot>
+          </v-img>
         </v-card>
       </template>
       <template>
@@ -82,8 +85,16 @@ export default {
     PostTag,
   },
   props: {
+    showBlacked: {
+      type: Boolean,
+      default: false,
+    },
     width: {
       type: Number,
+    },
+    disabled: {
+      type: Boolean,
+      default: false,
     },
     post: {
       type: Object,

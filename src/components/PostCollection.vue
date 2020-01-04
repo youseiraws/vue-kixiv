@@ -9,6 +9,7 @@
             solo
             single-line
             autofocus
+            hide-details
             append-outer-icon="mdi-check-circle-outline"
             @click:append-outer="editCollection(collection,index)"
             @keyup.enter="editCollection(collection,index)"
@@ -50,6 +51,7 @@
           solo
           single-line
           autofocus
+          hide-details
           append-outer-icon="mdi-check-circle-outline"
           @click:append-outer="addCollection()"
           @keyup.enter="addCollection()"
