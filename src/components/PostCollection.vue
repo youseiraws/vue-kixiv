@@ -25,7 +25,7 @@
           </v-list-item-icon>
           <v-list-item-title>
             {{collection.name}}
-            <span class="grey--text pl-1">{{collection.posts.length}}</span>
+            <span class="grey--text ml-2">{{collection.posts.length}}</span>
           </v-list-item-title>
           <v-spacer></v-spacer>
           <v-btn

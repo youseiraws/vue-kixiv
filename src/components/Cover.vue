@@ -1,11 +1,7 @@
 <template>
   <div id="cover">
     <v-hover #default="{hover}">
-      <v-card
-        class="cover-card"
-        :raised="hover"
-        @click="$emit('cover-clicked',name)"
-      >
+      <v-card class="cover-card" :raised="hover" v-on="$listeners">
         <v-img
           class="cover-img"
           :width="width"
@@ -13,8 +9,9 @@
           :src="getPostUrl(cover,'sample')"
           :lazy-src="getPostUrl(cover,'preview')"
         >
-          <v-overlay absolute>
-            <span :style="{color:color}">{{name}}</span>
+          <v-overlay absolute class="text-center">
+            <div :style="{color:color}">{{name}}</div>
+            <div class="white--text">{{count}}</div>
           </v-overlay>
         </v-img>
       </v-card>
@@ -34,6 +31,10 @@ export default {
     name: {
       type: String,
       default: '',
+    },
+    count: {
+      type: Number,
+      default: 0,
     },
     color: {
       type: String,

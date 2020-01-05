@@ -4,6 +4,7 @@ import api from '../../api'
 const urls = ['preview_url', 'sample_url', 'jpeg_url', 'file_url']
 
 /** mutations-types **/
+const ADD_POST_TAGS = 'ADD_POST_TAGS'
 const ADD_POSTS = 'ADD_POSTS'
 const INIT_PAGE = 'INIT_PAGE'
 const SET_PAGE = 'SET_PAGE'
@@ -23,6 +24,7 @@ const NOT_YET_CACHED = 'NOT_YET_CACHED'
 
 /** actions-types **/
 const INIT_STATE = 'INIT_STATE'
+const SEARCH_POST_TAG = 'SEARCH_POST_TAG'
 const LOAD_TAG = 'LOAD_TAG'
 const PREV_TAG = 'PREV_TAG'
 const NEXT_TAG = 'NEXT_TAG'
@@ -31,6 +33,7 @@ const REFRESH_TAG = 'REFRESH_TAG'
 const GET_NOT_CACHED_POSTS = 'GET_NOT_CACHED_POSTS'
 
 const state = {
+  postTags: [],
   page: 1,
   name: '',
   order: 'random',
@@ -41,6 +44,7 @@ const state = {
 }
 
 const getters = {
+  postTags: state => state.postTags,
   page: state => state.page,
   index: state => state.page - 1,
   size: state => state.tags.length,
@@ -56,6 +60,7 @@ const getters = {
 }
 
 const mutations = {
+  [ADD_POST_TAGS]: (state, postTags) => state.postTags.push(...postTags),
   [ADD_POSTS]: (state, posts) => state.tags.push(posts),
   [INIT_PAGE]: state => (state.page = 1),
   [SET_PAGE]: (state, page) => (state.page = page),
@@ -96,6 +101,14 @@ const actions = {
     commit(FINISH_LOADING)
     commit(NOT_YET_LOADED)
     commit(NOT_YET_CACHED)
+  },
+  [SEARCH_POST_TAG]: async ({ commit }, name) => {
+    const result = await api.get('/tag', {
+      name: _.toLower(name),
+    })
+    if (!_.isEmpty(result)) {
+      commit(ADD_POST_TAGS, result)
+    }
   },
   [LOAD_TAG]: async (
     { state, getters, commit, dispatch },

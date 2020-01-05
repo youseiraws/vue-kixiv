@@ -21,7 +21,9 @@
             :src="getPostUrl(post,'sample')"
             :lazy-src="getPostUrl(post,'preview')"
           >
-            <slot name="action"></slot>
+            <slot name="action">
+              <v-icon v-if="hasCollected" class="post-heart-icon pa-1" color="red">mdi-heart</v-icon>
+            </slot>
           </v-img>
         </v-card>
       </template>
@@ -151,5 +153,11 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
+.post-heart-icon {
+  width: 100%;
+  height: 100%;
+  justify-content: flex-end !important;
+  align-items: flex-end !important;
+}
 </style>

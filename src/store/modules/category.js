@@ -56,6 +56,7 @@ const getters = {
   name: state => state.name,
   type: state => state.type,
   tags: (state, getters) => state.totalTags[getters.index],
+  totalTags: state => state.totalTags,
   categories: state => state.categories,
   isSearching: state => state.isSearching,
   isTagEmpty: (state, getters) => _.isEmpty(state.totalTags[getters.index]),

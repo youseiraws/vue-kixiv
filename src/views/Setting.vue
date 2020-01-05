@@ -41,7 +41,7 @@
             class="action-control action-slider d-flex align-center"
             v-model="pageSizeModel"
             :min="1"
-            :max="60"
+            :max="100"
             thumb-label="always"
             hide-details
             validate-on-blur
@@ -78,7 +78,7 @@ export default {
     return {
       containModel: false,
       carouselsIntervalModel: 6,
-      pageSizeModel: 20,
+      pageSizeModel: 100,
     }
   },
   computed: {
@@ -118,7 +118,7 @@ export default {
   width: 100%;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(2, 100px);
+  grid-template-rows: repeat(3, 100px);
   align-items: center;
   justify-items: center;
 }

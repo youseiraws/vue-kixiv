@@ -11,7 +11,10 @@
       @refresh-click="refreshTag"
     >
       <template #header-title>
-        <v-chip label outlined>{{name}}</v-chip>
+        <v-chip label outlined :color="color">
+          {{name}}
+          <span class="grey--text ml-2">{{count}}</span>
+        </v-chip>
       </template>
       <template #header-action>
         <v-menu offset-y transition="scroll-y-transition" :disabled="isLoading">
@@ -53,6 +56,7 @@
 import { mapGetters, mapMutations, mapActions } from 'vuex'
 import _ from 'lodash'
 import { Container, Post } from '../components'
+import { getTagColor } from '../util/util'
 
 export default {
   name: 'Tag',
@@ -68,6 +72,8 @@ export default {
   },
   data() {
     return {
+      count: 0,
+      color: '#000000',
       postOrders: [
         {
           name: '随机',
@@ -92,6 +98,7 @@ export default {
   },
   computed: {
     ...mapGetters('tag', [
+      'postTags',
       'page',
       'size',
       'order',
@@ -103,8 +110,16 @@ export default {
       'hasPrevPage',
       'hasNextPage',
     ]),
+    ...mapGetters('category', ['totalTags']),
   },
   watch: {
+    postTags(newPostTags) {
+      const tag = newPostTags.find(tag => tag.name === this.name)
+      if (tag !== undefined) {
+        this.count = tag.count
+        this.color = getTagColor(tag)
+      }
+    },
     total(newTotal) {
       this.setPosts(newTotal)
     },
@@ -121,6 +136,7 @@ export default {
   methods: {
     ...mapActions('tag', {
       initState: 'INIT_STATE',
+      searchPostTag: 'SEARCH_POST_TAG',
       loadTag: 'LOAD_TAG',
       prevTag: 'PREV_TAG',
       nextTag: 'NEXT_TAG',
@@ -129,6 +145,19 @@ export default {
     }),
     ...mapMutations('larger', { setPosts: 'SET_POSTS' }),
     ...mapActions('larger', { openLarger: 'OPEN_LARGER' }),
+    initTag(name) {
+      const tag = [...this.totalTags.flat(), ...this.postTags].find(
+        tag => tag.name === name,
+      )
+      if (tag !== undefined) {
+        this.count = tag.count
+        this.color = getTagColor(tag)
+      } else {
+        this.count = 0
+        this.color = '#000000'
+        this.searchPostTag(name)
+      }
+    },
     clickPost(post) {
       this.openLarger({ post, posts: this.total, loadMore: this.nextTag })
     },
@@ -140,6 +169,7 @@ export default {
       vm.postOrder = vm.postOrders.find(
         postOrder => postOrder.value === vm.order,
       )
+      vm.initTag(to.params.name)
       vm.loadTag({ name: to.params.name })
       vm.autoRefreshTimer = window.setInterval(() => vm.refreshTag(), 20000)
     })
@@ -150,6 +180,7 @@ export default {
     this.postOrder = this.postOrders.find(
       postOrder => postOrder.value === this.order,
     )
+    this.initTag(to.params.name)
     this.loadTag({ name: to.params.name })
     next()
   },

@@ -23,6 +23,7 @@
         </template>
         <template v-else>
           {{collection.name}}
+          <span class="grey--text ml-2">{{collection.posts.length}}</span>
           <v-spacer></v-spacer>
           <v-btn
             icon
@@ -61,7 +62,10 @@
         <v-list-item-title>新建收藏集</v-list-item-title>
       </v-list-item>
       <v-spacer></v-spacer>
-      <v-tab class="collection-tab" :href="`#${blacklist.name}`">{{blacklist.name}}</v-tab>
+      <v-tab class="collection-tab" :href="`#${blacklist.name}`">
+        {{blacklist.name}}
+        <span class="grey--text ml-2">{{blacklist.posts.length}}</span>
+      </v-tab>
       <v-tabs-items v-model="tab">
         <v-tab-item
           v-for="(collection,index) in totalCollections"
@@ -314,7 +318,6 @@ export default {
 <style lang="scss">
 #collection {
   .collection-tabs {
-    height: 90vh;
     .collection-tab {
       justify-content: flex-start;
     }

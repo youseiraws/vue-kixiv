@@ -44,10 +44,16 @@
                 :input-value="selected"
                 @click="select"
                 @click:close="removeItem(item)"
-              >{{item.name}}</v-chip>
+              >
+                {{item.name}}
+                <span class="ml-2">{{item.count}}</span>
+              </v-chip>
             </template>
             <template #item="{item}">
-              <v-list-item-title :style="{color:getTagColor(item)}">{{item.name}}</v-list-item-title>
+              <v-list-item-title :style="{color:getTagColor(item)}">
+                {{item.name}}
+                <span class="grey--text ml-2">{{item.count}}</span>
+              </v-list-item-title>
             </template>
           </v-autocomplete>
         </div>

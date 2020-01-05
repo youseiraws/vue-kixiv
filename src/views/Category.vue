@@ -51,9 +51,10 @@
           :key="tag.id"
           :width="194"
           :name="tag.name"
+          :count="tag.count"
           :color="getTagColor(tag)"
           :cover="categories[tag.name]"
-          @cover-clicked="clickCover"
+          @click="clickCover(tag.name)"
         ></cover>
       </template>
       <template #footer-title>

@@ -6,7 +6,7 @@ const SET_PAGE_SIZE = 'SET_PAGE_SIZE'
 const state = {
   contain: false,
   carouselsInterval: 6,
-  pageSize: 20,
+  pageSize: 100,
 }
 
 const getters = {
