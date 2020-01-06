@@ -14,6 +14,17 @@
             <template #label>{{containText}}</template>
           </v-switch>
 
+          <span>图片评级</span>
+          <v-btn-toggle v-model="ratingModel" multiple dense>
+            <v-btn
+              v-for="rating in ratings"
+              :key="rating"
+              light
+              outlined
+              :value="rating[0]"
+            >{{rating}}</v-btn>
+          </v-btn-toggle>
+
           <span>轮播间隔秒数</span>
           <v-slider
             class="action-control action-slider d-flex align-center"
@@ -76,13 +87,15 @@ export default {
   },
   data() {
     return {
+      ratings: ['safe', 'questionable', 'explicit'],
       containModel: false,
+      ratingModel: [],
       carouselsIntervalModel: 6,
       pageSizeModel: 100,
     }
   },
   computed: {
-    ...mapGetters(['contain', 'carouselsInterval', 'pageSize']),
+    ...mapGetters(['contain', 'rating', 'carouselsInterval', 'pageSize']),
     containText() {
       return this.containModel ? 'CONTAIN' : 'COVER'
     },
@@ -90,6 +103,9 @@ export default {
   watch: {
     containModel(newConatainModel) {
       this.setContain(newConatainModel)
+    },
+    ratingModel(newRatingModel) {
+      this.setRating(newRatingModel)
     },
     carouselsIntervalModel(newCarouselsIntervalModel) {
       this.setCarouselsInterval(newCarouselsIntervalModel)
@@ -101,12 +117,14 @@ export default {
   methods: {
     ...mapMutations({
       setContain: 'SET_CONTAIN',
+      setRating: 'SET_RATING',
       setCarouselsInterval: 'SET_CAROUSELS_INTERVAL',
       setPageSize: 'SET_PAGE_SIZE',
     }),
   },
   created() {
     this.containModel = this.contain
+    this.ratingModel = this.rating
     this.carouselsIntervalModel = this.carouselsInterval
     this.pageSizeModel = this.pageSize
   },
