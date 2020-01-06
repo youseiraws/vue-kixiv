@@ -6,7 +6,7 @@ const SET_PAGE_SIZE = 'SET_PAGE_SIZE'
 
 const state = {
   contain: false,
-  rating: [],
+  rating: ['s', 'q', 'e'],
   carouselsInterval: 6,
   pageSize: 100,
 }

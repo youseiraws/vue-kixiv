@@ -15,7 +15,7 @@
           </v-switch>
 
           <span>图片评级</span>
-          <v-btn-toggle v-model="ratingModel" multiple dense>
+          <v-btn-toggle class="action-control" v-model="ratingModel" mandatory multiple dense>
             <v-btn
               v-for="rating in ratings"
               :key="rating"
@@ -89,7 +89,7 @@ export default {
     return {
       ratings: ['safe', 'questionable', 'explicit'],
       containModel: false,
-      ratingModel: [],
+      ratingModel: ['s', 'q', 'e'],
       carouselsIntervalModel: 6,
       pageSizeModel: 100,
     }

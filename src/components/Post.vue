@@ -1,5 +1,5 @@
 <template>
-  <div id="post" v-if="!hasBlacked||showBlacked">
+  <div id="post" v-if="(!hasBlacked||showBlacked)&&!hasRatingLimited">
     <v-menu
       v-model="menu"
       offset-x
@@ -115,7 +115,7 @@ export default {
   },
   computed: {
     ...mapGetters('collection', ['collections', 'blacklist']),
-    ...mapGetters('setting', ['contain']),
+    ...mapGetters('setting', ['contain', 'rating']),
     hasCollected() {
       return this.collections.some(collection =>
         collection.posts.map(post => post.id).includes(this.post.id),
@@ -123,6 +123,9 @@ export default {
     },
     hasBlacked() {
       return this.blacklist.posts.map(post => post.id).includes(this.post.id)
+    },
+    hasRatingLimited() {
+      return !this.rating.includes(this.post.rating)
     },
   },
   watch: {

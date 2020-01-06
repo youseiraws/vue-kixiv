@@ -124,10 +124,12 @@ export default {
   computed: {
     ...mapGetters('larger', ['overlay', 'post', 'posts', 'loadMore']),
     ...mapGetters('collection', ['collections', 'blacklist']),
-    ...mapGetters('setting', ['contain', 'carouselsInterval']),
+    ...mapGetters('setting', ['contain', 'rating', 'carouselsInterval']),
     unblackedPosts() {
       return this.posts.filter(
-        post => !this.blacklist.posts.map(post => post.id).includes(post.id),
+        post =>
+          !this.blacklist.posts.map(post => post.id).includes(post.id) &&
+          this.rating.includes(post.rating),
       )
     },
     index() {
