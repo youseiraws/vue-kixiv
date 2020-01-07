@@ -15,10 +15,7 @@
           {{name}}
           <span class="grey--text ml-2">{{count}}</span>
           <v-btn icon @click="selectTag(tag)">
-            <v-icon
-              v-if="tagmanagement.tags.map(tag=>tag.id).includes(tag.id)"
-              color="yellow"
-            >mdi-star</v-icon>
+            <v-icon v-if="hasCollected" color="yellow">mdi-star</v-icon>
             <v-icon v-else>mdi-star-outline</v-icon>
           </v-btn>
         </v-chip>
@@ -81,6 +78,7 @@ export default {
     return {
       count: 0,
       color: '#000000',
+      hasCollected: false,
       postOrders: [
         {
           name: '随机',
@@ -118,7 +116,7 @@ export default {
       'hasNextPage',
     ]),
     ...mapGetters('category', ['totalTags']),
-    ...mapGetters('collection', ['tagmanagement']),
+    ...mapGetters('collection', ['tagManagement']),
   },
   watch: {
     postTags(newPostTags) {
@@ -126,6 +124,9 @@ export default {
       if (tag !== undefined) {
         this.count = tag.count
         this.color = getTagColor(tag)
+        this.hasCollected = this.tagManagement.tags
+          .map(tag => tag.id)
+          .includes(tag.id)
       }
     },
     total(newTotal) {
@@ -164,9 +165,13 @@ export default {
       if (tag !== undefined) {
         this.count = tag.count
         this.color = getTagColor(tag)
+        this.hasCollected = this.tagManagement.tags
+          .map(tag => tag.id)
+          .includes(tag.id)
       } else {
         this.count = 0
         this.color = '#000000'
+        this.hasCollected = false
         this.searchPostTag(name)
       }
     },
@@ -174,7 +179,7 @@ export default {
       this.openLarger({ post, posts: this.total, loadMore: this.nextTag })
     },
     selectTag(tag) {
-      if (this.tagmanagement.tags.map(tag => tag.id).includes(tag.id))
+      if (this.tagManagement.tags.map(tag => tag.id).includes(tag.id))
         this.collectionUntag(tag.id)
       else this.collectionTag(tag.id)
     },

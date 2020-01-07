@@ -120,7 +120,8 @@ export default {
     },
     settings(newSettings) {
       this.containModel = newSettings['CONTAIN'] || false
-      this.ratingModel = newSettings['RATING'] || ['s', 'q', 'e']
+      if (!_.isEqual(new Set(this.ratingModel), new Set(newSettings['RATING'])))
+        this.ratingModel = newSettings['RATING'] || ['s', 'q', 'e']
       this.carouselsIntervalModel = newSettings['CAROUSELS_INTERVAL'] || 6
       this.pageSizeModel = newSettings['PAGE_SIZE'] || 100
     },

@@ -23,10 +23,11 @@ const getters = {
     state.settings.forEach(setting => (result[setting.name] = setting.value))
     return result
   },
-  contain: (state, getters) => getters.settings['CONTAIN'],
-  rating: (state, getters) => getters.settings['RATING'],
-  carouselsInterval: (state, getters) => getters.settings['CAROUSELS_INTERVAL'],
-  pageSize: (state, getters) => getters.settings['PAGE_SIZE'],
+  contain: (state, getters) => getters.settings['CONTAIN'] || false,
+  rating: (state, getters) => getters.settings['RATING'] || ['s', 'q', 'e'],
+  carouselsInterval: (state, getters) =>
+    getters.settings['CAROUSELS_INTERVAL'] || 6,
+  pageSize: (state, getters) => getters.settings['PAGE_SIZE'] || 100,
   isLoading: state => state.isLoading,
 }
 
@@ -38,15 +39,14 @@ const mutations = {
 
 const actions = {
   [UPDATE]: async ({ commit }, { name, value }) => {
-    if (_.isEmpty(name) || _.isEmpty(value)) return
     let result
     try {
-      result = await api.get(`${baseUrl}/update`, {
+      result = await api.post(`${baseUrl}/update`, {
         name,
         value,
       })
     } catch {
-      result = await api.get(`${baseUrl}/update`, {
+      result = await api.post(`${baseUrl}/update`, {
         name,
         value,
       })
@@ -58,9 +58,9 @@ const actions = {
     commit(START_LOADING)
     let result
     try {
-      result = await api.get(`${baseUrl}/list`)
+      result = await api.post(`${baseUrl}/list`)
     } catch {
-      result = await api.get(`${baseUrl}/list`)
+      result = await api.post(`${baseUrl}/list`)
     }
     if (!_.isEmpty(result)) commit(SET_SETTINGS, result)
     commit(FINISH_LOADING)
