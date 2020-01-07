@@ -50,12 +50,19 @@
           v-for="tag in tags"
           :key="tag.id"
           :width="194"
-          :name="tag.name"
-          :count="tag.count"
-          :color="getTagColor(tag)"
           :cover="categories[tag.name]"
           @click="clickCover(tag.name)"
-        ></cover>
+        >
+          <div :style="{color:getTagColor(tag)}">{{tag.name}}</div>
+          <div class="white--text">{{tag.count}}</div>
+          <v-btn icon @click="selectTag(tag)">
+            <v-icon
+              v-if="tagmanagement.tags.map(tag=>tag.id).includes(tag.id)"
+              color="yellow"
+            >mdi-star</v-icon>
+            <v-icon v-else>mdi-star-outline</v-icon>
+          </v-btn>
+        </cover>
       </template>
       <template #footer-title>
         <v-pagination v-model="pagination" :length="size" :disabled="isSearching"></v-pagination>
@@ -65,12 +72,10 @@
 </template>
 
 <script>
-import { createNamespacedHelpers } from 'vuex'
+import { mapGetters, mapActions } from 'vuex'
 import _ from 'lodash'
 import { Container, Cover } from '../components'
 import { tagTypes, getTagColor } from '../util/util'
-
-const { mapGetters, mapActions } = createNamespacedHelpers('category')
 
 export default {
   name: 'Category',
@@ -93,7 +98,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters([
+    ...mapGetters('category', [
       'page',
       'size',
       'name',
@@ -107,6 +112,7 @@ export default {
       'hasCached',
       'isCaching',
     ]),
+    ...mapGetters('collection', ['tagmanagement']),
   },
   watch: {
     pagination(newPagination) {
@@ -123,18 +129,27 @@ export default {
     },
   },
   methods: {
-    ...mapActions({
+    ...mapActions('category', {
       loadTag: 'LOAD_TAG',
       prevTag: 'PREV_TAG',
       nextTag: 'NEXT_TAG',
       searchTag: 'SEARCH_TAG',
       refreshCategory: 'REFRESH_CATEGORY',
     }),
+    ...mapActions('collection', {
+      tag: 'TAG',
+      untag: 'UNTAG',
+    }),
     getTagColor(tag) {
       return getTagColor(tag)
     },
     clickCover(name) {
       this.$router.push({ name: 'tag', params: { name } })
+    },
+    selectTag(tag) {
+      if (this.tagmanagement.tags.map(tag => tag.id).includes(tag.id))
+        this.untag(tag.id)
+      else this.tag(tag.id)
     },
   },
   created() {

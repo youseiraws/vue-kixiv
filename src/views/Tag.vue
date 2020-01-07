@@ -14,6 +14,13 @@
         <v-chip label outlined :color="color">
           {{name}}
           <span class="grey--text ml-2">{{count}}</span>
+          <v-btn icon @click="selectTag(tag)">
+            <v-icon
+              v-if="tagmanagement.tags.map(tag=>tag.id).includes(tag.id)"
+              color="yellow"
+            >mdi-star</v-icon>
+            <v-icon v-else>mdi-star-outline</v-icon>
+          </v-btn>
         </v-chip>
       </template>
       <template #header-action>
@@ -111,6 +118,7 @@ export default {
       'hasNextPage',
     ]),
     ...mapGetters('category', ['totalTags']),
+    ...mapGetters('collection', ['tagmanagement']),
   },
   watch: {
     postTags(newPostTags) {
@@ -145,6 +153,10 @@ export default {
     }),
     ...mapMutations('larger', { setPosts: 'SET_POSTS' }),
     ...mapActions('larger', { openLarger: 'OPEN_LARGER' }),
+    ...mapActions('collection', {
+      collectionTag: 'TAG',
+      collectionUntag: 'UNTAG',
+    }),
     initTag(name) {
       const tag = [...this.totalTags.flat(), ...this.postTags].find(
         tag => tag.name === name,
@@ -160,6 +172,11 @@ export default {
     },
     clickPost(post) {
       this.openLarger({ post, posts: this.total, loadMore: this.nextTag })
+    },
+    selectTag(tag) {
+      if (this.tagmanagement.tags.map(tag => tag.id).includes(tag.id))
+        this.collectionUntag(tag.id)
+      else this.collectionTag(tag.id)
     },
   },
   beforeRouteEnter(to, from, next) {

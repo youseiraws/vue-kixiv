@@ -61,6 +61,10 @@
         </v-list-item-icon>
         <v-list-item-title>新建收藏集</v-list-item-title>
       </v-list-item>
+      <v-tab class="collection-tab" :href="`#${tagmanagement.name}`">
+        {{tagmanagement.name}}
+        <span class="grey--text ml-2">{{tagmanagement.tags.length}}</span>
+      </v-tab>
       <v-spacer></v-spacer>
       <v-tab class="collection-tab" :href="`#${blacklist.name}`">
         {{blacklist.name}}
@@ -68,11 +72,13 @@
       </v-tab>
       <v-tabs-items v-model="tab">
         <v-tab-item
-          v-for="(collection,index) in totalCollections"
+          v-for="collection in totalCollections"
           :key="collection.name"
           :value="collection.name"
         >
           <container
+            :gap="64"
+            :columns="5"
             :is-show-footer-left-indicator="hasPrevPage"
             :is-show-footer-right-indicator="hasNextPage"
             :is-show-refresh="false"
@@ -82,7 +88,7 @@
             <template #header-title>
               <v-checkbox
                 class="mt-0 pt-0"
-                v-show="showCheckbox&&index!==totalCollections.length-1"
+                v-show="showCheckbox&&isCollectionTab"
                 v-model="checkAll"
                 label="全选"
                 hide-details
@@ -90,18 +96,13 @@
               ></v-checkbox>
             </template>
             <template #header-action>
-              <v-btn
-                v-show="index!==totalCollections.length-1"
-                light
-                outlined
-                @click="download()"
-              >下载</v-btn>
+              <v-btn v-show="isCollectionTab" light outlined @click="download()">下载</v-btn>
             </template>
             <template #content>
               <post
                 v-for="post in currentPosts"
                 :key="post.id"
-                :show-blacked="index===totalCollections.length-1"
+                :show-blacked="isBlacklistTab"
                 :width="301"
                 :post="post"
                 :disabled="showCheckbox"
@@ -116,6 +117,56 @@
                   ></v-checkbox>
                 </template>
               </post>
+            </template>
+            <template #footer-title>
+              <v-pagination v-model="pagination" :length="currentLength"></v-pagination>
+            </template>
+          </container>
+        </v-tab-item>
+        <v-tab-item :value="tagmanagement.name">
+          <container
+            :is-show-footer-left-indicator="hasPrevPage"
+            :is-show-footer-right-indicator="hasNextPage"
+            :is-show-refresh="false"
+            @footer-left-indicator-click="prevCollection"
+            @footer-right-indicator-click="nextCollection"
+          >
+            <template #header-action>
+              <div class="d-inline-flex">
+                <v-menu offset-y transition="scroll-y-transition">
+                  <template #activator="{on}">
+                    <v-btn light outlined v-on="on" :color="tagType.color">{{tagType.name}}</v-btn>
+                  </template>
+                  <template>
+                    <v-list>
+                      <v-list-item-group v-model="tagType" mandatory>
+                        <v-list-item
+                          v-for="tagType in tagTypes"
+                          :key="tagType.value"
+                          :value="tagType"
+                        >
+                          <v-list-item-title :style="{color:tagType.color}">{{tagType.name}}</v-list-item-title>
+                        </v-list-item>
+                      </v-list-item-group>
+                    </v-list>
+                  </template>
+                </v-menu>
+              </div>
+            </template>
+            <template #content>
+              <cover
+                v-for="tag in currentTags"
+                :key="tag.id"
+                :width="194"
+                :cover="categories[tag.name]"
+                @click="clickCover(tag.name)"
+              >
+                <div :style="{color:getTagColor(tag)}">{{tag.name}}</div>
+                <div class="white--text">{{tag.count}}</div>
+                <v-btn icon @click="untag(tag.id)">
+                  <v-icon color="yellow">mdi-star</v-icon>
+                </v-btn>
+              </cover>
             </template>
             <template #footer-title>
               <v-pagination v-model="pagination" :length="currentLength"></v-pagination>
@@ -144,16 +195,19 @@
 <script>
 import { mapGetters, mapActions } from 'vuex'
 import moment from 'moment'
-import { Container, Post } from '../components'
-import { downloadImages } from '../util/util'
+import { Container, Post, Cover } from '../components'
+import { tagTypes, getTagColor, downloadImages } from '../util/util'
 
 const dateDisplayFormat = 'YYYYMMDD-HHmmss'
+const BLACKLIST = '黑名单'
+const TAG_MANAGEMENT = '标签管理'
 
 export default {
   name: 'Collection',
   components: {
     Container,
     Post,
+    Cover,
   },
   data() {
     return {
@@ -168,31 +222,64 @@ export default {
       showCheckbox: false,
       checkAll: false,
       checkeds: [],
+      tagTypes,
+      tagType: {
+        name: 'any',
+        value: '',
+        color: '#000000',
+      },
     }
   },
   computed: {
-    ...mapGetters('collection', ['collections', 'blacklist', 'isLoading']),
+    ...mapGetters('collection', [
+      'collections',
+      'blacklist',
+      'tagManagement',
+      'categories',
+      'isLoading',
+    ]),
     ...mapGetters('setting', ['pageSize']),
     totalCollections() {
       if (this.collections !== undefined && this.blacklist !== undefined)
         return [...this.collections, this.blacklist]
     },
+    isCollectionTab() {
+      return this.tab !== BLACKLIST && this.tab !== TAG_MANAGEMENT
+    },
+    isBlacklistTab() {
+      return this.tab === BLACKLIST
+    },
+    isTagManagementTab() {
+      return this.tab === TAG_MANAGEMENT
+    },
     currentCollection() {
-      if (this.totalCollections !== undefined)
-        return this.totalCollections.find(
-          collection => collection.name === this.tab,
-        )
+      if (!isTagManagementTab)
+        if (this.totalCollections !== undefined)
+          return this.totalCollections.find(
+            collection => collection.name === this.tab,
+          )
+        else return this.tagManagement
     },
     currentPosts() {
-      if (this.currentCollection === undefined) return []
+      if (this.currentCollection === undefined && isTagManagementTab) return []
       return this.currentCollection.posts.slice(
+        (this.pagination - 1) * this.pageSize,
+        this.pagination * this.pageSize,
+      )
+    },
+    currentTags() {
+      if (this.currentCollection === undefined && !isTagManagementTab) return []
+      return this.currentCollection.tags.slice(
         (this.pagination - 1) * this.pageSize,
         this.pagination * this.pageSize,
       )
     },
     currentLength() {
       if (this.currentCollection === undefined) return 0
-      return Math.ceil(this.currentCollection.posts.length / this.pageSize)
+      return Math.ceil(
+        this.currentCollection[!isTagManagementTab ? 'posts' : 'tags'].length /
+          this.pageSize,
+      )
     },
     unblackedPosts() {
       return this.currentPosts.filter(
@@ -231,6 +318,9 @@ export default {
           .includes(unblackedPost.id),
       )
     },
+    tagManagement(newTagManagement) {
+      this.loadCover()
+    },
   },
   methods: {
     ...mapActions('collection', {
@@ -239,6 +329,8 @@ export default {
       remove: 'REMOVE',
       like: 'LIKE',
       dislike: 'DISLIKE',
+      untag: 'UNTAG',
+      loadCover: 'LOAD_COVER',
     }),
     ...mapActions('larger', { openLarger: 'OPEN_LARGER' }),
     prevCollection() {
@@ -307,6 +399,12 @@ export default {
         )
         this.checkeds = []
       }
+    },
+    getTagColor(tag) {
+      return getTagColor(tag)
+    },
+    clickCover(name) {
+      this.$router.push({ name: 'tag', params: { name } })
     },
   },
   created() {

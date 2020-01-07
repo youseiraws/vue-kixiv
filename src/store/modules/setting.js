@@ -1,32 +1,71 @@
+import _ from 'lodash'
+import api from '../../api'
+
+const baseUrl = '/setting'
+
 /** mutations-types **/
-const SET_CONTAIN = 'SET_CONTAIN'
-const SET_RATING = 'SET_RATING'
-const SET_CAROUSELS_INTERVAL = 'SET_CAROUSELS_INTERVAL'
-const SET_PAGE_SIZE = 'SET_PAGE_SIZE'
+const SET_SETTINGS = 'SET_SETTINGS'
+const START_LOADING = 'START_LOADING'
+const FINISH_LOADING = 'FINISH_LOADING'
+
+/** actions-types **/
+const UPDATE = 'UPDATE'
+const LIST = 'LIST'
 
 const state = {
-  contain: false,
-  rating: ['s', 'q', 'e'],
-  carouselsInterval: 6,
-  pageSize: 100,
+  settings: [],
+  isLoading: false,
 }
 
 const getters = {
-  contain: state => state.contain,
-  rating: state => state.rating,
-  carouselsInterval: state => state.carouselsInterval,
-  pageSize: state => state.pageSize,
+  settings: state => {
+    const result = {}
+    state.settings.forEach(setting => (result[setting.name] = setting.value))
+    return result
+  },
+  contain: (state, getters) => getters.settings['CONTAIN'],
+  rating: (state, getters) => getters.settings['RATING'],
+  carouselsInterval: (state, getters) => getters.settings['CAROUSELS_INTERVAL'],
+  pageSize: (state, getters) => getters.settings['PAGE_SIZE'],
+  isLoading: state => state.isLoading,
 }
 
 const mutations = {
-  [SET_CONTAIN]: (state, contain) => (state.contain = contain),
-  [SET_RATING]: (state, rating) => (state.rating = rating),
-  [SET_CAROUSELS_INTERVAL]: (state, carouselsInterval) =>
-    (state.carouselsInterval = carouselsInterval),
-  [SET_PAGE_SIZE]: (state, pageSize) => (state.pageSize = pageSize),
+  [SET_SETTINGS]: (state, settings) => (state.settings = settings),
+  [START_LOADING]: state => (state.isLoading = true),
+  [FINISH_LOADING]: state => (state.isLoading = false),
 }
 
-const actions = {}
+const actions = {
+  [UPDATE]: async ({ commit }, { name, value }) => {
+    if (_.isEmpty(name) || _.isEmpty(value)) return
+    let result
+    try {
+      result = await api.get(`${baseUrl}/update`, {
+        name,
+        value,
+      })
+    } catch {
+      result = await api.get(`${baseUrl}/update`, {
+        name,
+        value,
+      })
+    }
+    if (!_.isEmpty(result)) commit(SET_SETTINGS, result)
+  },
+  [LIST]: async ({ state, commit }) => {
+    if (state.isLoading) return
+    commit(START_LOADING)
+    let result
+    try {
+      result = await api.get(`${baseUrl}/list`)
+    } catch {
+      result = await api.get(`${baseUrl}/list`)
+    }
+    if (!_.isEmpty(result)) commit(SET_SETTINGS, result)
+    commit(FINISH_LOADING)
+  },
+}
 
 export default {
   namespaced: true,

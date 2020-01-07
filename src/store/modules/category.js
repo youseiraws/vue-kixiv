@@ -82,7 +82,9 @@ const mutations = {
   [CLEAR_TAGS]: state => (state.totalTags = []),
   [ADD_COVER]: (state, payload) => {
     if (state.categories[payload.tag] === undefined)
-      state.categories[payload.tag] = payload.post
+      state.categories = Object.assign({}, state.categories, {
+        [payload.tag]: payload.post,
+      })
   },
   [UPDATE_COVER]: (state, newPosts) => {
     newPosts.forEach(newPost => {

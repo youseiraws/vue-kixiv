@@ -14,11 +14,15 @@ export default {
   components: { Home, Larger },
   methods: {
     ...mapActions('collection', {
-      list: 'LIST',
+      collections: 'LIST',
+    }),
+    ...mapActions('setting', {
+      settings: 'LIST',
     }),
   },
   created() {
-    this.list()
+    this.collections()
+    this.settings()
   },
 }
 </script>

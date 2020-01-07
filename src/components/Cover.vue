@@ -10,8 +10,7 @@
           :lazy-src="getPostUrl(cover,'preview')"
         >
           <v-overlay absolute class="text-center">
-            <div :style="{color:color}">{{name}}</div>
-            <div class="white--text">{{count}}</div>
+            <slot></slot>
           </v-overlay>
         </v-img>
       </v-card>
@@ -27,18 +26,6 @@ export default {
   props: {
     width: {
       type: Number,
-    },
-    name: {
-      type: String,
-      default: '',
-    },
-    count: {
-      type: Number,
-      default: 0,
-    },
-    color: {
-      type: String,
-      default: '#000000',
     },
     cover: {
       type: Object,

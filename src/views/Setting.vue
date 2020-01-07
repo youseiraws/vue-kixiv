@@ -76,9 +76,10 @@
 
 <script>
 import { createNamespacedHelpers } from 'vuex'
+import _ from 'lodash'
 import { Container } from '../components'
 
-const { mapGetters, mapMutations } = createNamespacedHelpers('setting')
+const { mapGetters, mapActions } = createNamespacedHelpers('setting')
 
 export default {
   name: 'Setting',
@@ -92,41 +93,51 @@ export default {
       ratingModel: ['s', 'q', 'e'],
       carouselsIntervalModel: 6,
       pageSizeModel: 100,
+      debouncedUpdate: null,
     }
   },
   computed: {
-    ...mapGetters(['contain', 'rating', 'carouselsInterval', 'pageSize']),
+    ...mapGetters(['settings']),
     containText() {
       return this.containModel ? 'CONTAIN' : 'COVER'
     },
   },
   watch: {
-    containModel(newConatainModel) {
-      this.setContain(newConatainModel)
+    containModel(newContainModel) {
+      this.debouncedUpdate({ name: 'CONTAIN', value: newContainModel })
     },
     ratingModel(newRatingModel) {
-      this.setRating(newRatingModel)
+      this.debouncedUpdate({ name: 'RATING', value: newRatingModel })
     },
     carouselsIntervalModel(newCarouselsIntervalModel) {
-      this.setCarouselsInterval(newCarouselsIntervalModel)
+      this.debouncedUpdate({
+        name: 'CAROUSELS_INTERVAL',
+        value: newCarouselsIntervalModel,
+      })
     },
     pageSizeModel(newPageSizeModel) {
-      this.setPageSize(newPageSizeModel)
+      this.debouncedUpdate({ name: 'PAGE_SIZE', value: newPageSizeModel })
+    },
+    settings(newSettings) {
+      this.containModel = newSettings['CONTAIN'] || false
+      this.ratingModel = newSettings['RATING'] || ['s', 'q', 'e']
+      this.carouselsIntervalModel = newSettings['CAROUSELS_INTERVAL'] || 6
+      this.pageSizeModel = newSettings['PAGE_SIZE'] || 100
     },
   },
   methods: {
-    ...mapMutations({
-      setContain: 'SET_CONTAIN',
-      setRating: 'SET_RATING',
-      setCarouselsInterval: 'SET_CAROUSELS_INTERVAL',
-      setPageSize: 'SET_PAGE_SIZE',
+    ...mapActions({
+      update: 'UPDATE',
     }),
   },
   created() {
-    this.containModel = this.contain
-    this.ratingModel = this.rating
-    this.carouselsIntervalModel = this.carouselsInterval
-    this.pageSizeModel = this.pageSize
+    this.debouncedUpdate = _.debounce(
+      ({ name, value }) => this.update({ name, value }),
+      1000,
+    )
+  },
+  destroyed() {
+    this.debouncedUpdate.cancel()
   },
 }
 </script>
@@ -136,7 +147,7 @@ export default {
   width: 100%;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(3, 100px);
+  grid-template-rows: repeat(4, 100px);
   align-items: center;
   justify-items: center;
 }
