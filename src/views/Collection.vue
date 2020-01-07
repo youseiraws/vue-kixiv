@@ -103,12 +103,12 @@
                 :width="301"
                 :post="post"
                 :disabled="showCheckbox"
-                @post-clicked="clickPost(post)"
+                @post-clicked.self="clickPost(post)"
               >
                 <template #action>
                   <v-checkbox
                     class="collection-checkbox"
-                    v-show="showCheckbox"
+                    v-show="showCheckbox&&isCollectionTab"
                     v-model="checkeds"
                     :value="post"
                   ></v-checkbox>
@@ -297,6 +297,7 @@ export default {
   watch: {
     tab(newTab) {
       this.pagination = 1
+      this.showCheckbox = false
     },
     pagination(newPagination) {
       this.checkAll = this.unblackedPosts.every(unblackedPost =>
