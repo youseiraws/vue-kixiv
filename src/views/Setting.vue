@@ -136,6 +136,11 @@ export default {
       ({ name, value }) => this.update({ name, value }),
       1000,
     )
+    this.containModel = this.settings['CONTAIN'] || false
+    if (!_.isEqual(new Set(this.ratingModel), new Set(this.settings['RATING'])))
+      this.ratingModel = this.settings['RATING'] || ['s', 'q', 'e']
+    this.carouselsIntervalModel = this.settings['CAROUSELS_INTERVAL'] || 6
+    this.pageSizeModel = this.settings['PAGE_SIZE'] || 100
   },
   destroyed() {
     this.debouncedUpdate.cancel()

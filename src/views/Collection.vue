@@ -103,7 +103,7 @@
                 :width="301"
                 :post="post"
                 :disabled="showCheckbox"
-                @post-clicked.self="clickPost(post)"
+                @post-clicked="clickPost(post)"
               >
                 <template #action>
                   <v-checkbox
@@ -111,6 +111,7 @@
                     v-show="showCheckbox&&isCollectionTab"
                     v-model="checkeds"
                     :value="post"
+                    @click.native.stop
                   ></v-checkbox>
                 </template>
               </post>
