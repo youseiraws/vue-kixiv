@@ -14,11 +14,8 @@
         <v-chip label outlined :color="color">
           {{name}}
           <span class="grey--text ml-2">{{count}}</span>
-          <v-btn icon @click="selectTag(tag)">
-            <v-icon
-              v-if="tagmanagement.tags.map(tag=>tag.id).includes(tag.id)"
-              color="yellow"
-            >mdi-star</v-icon>
+          <v-btn icon @click="selectTag()">
+            <v-icon v-if="hasCollected" color="yellow">mdi-star</v-icon>
             <v-icon v-else>mdi-star-outline</v-icon>
           </v-btn>
         </v-chip>
@@ -79,8 +76,7 @@ export default {
   },
   data() {
     return {
-      count: 0,
-      color: '#000000',
+      postTag: {},
       postOrders: [
         {
           name: '随机',
@@ -118,15 +114,25 @@ export default {
       'hasNextPage',
     ]),
     ...mapGetters('category', ['totalTags']),
-    ...mapGetters('collection', ['tagmanagement']),
+    ...mapGetters('collection', ['tagManagement']),
+    count() {
+      if (_.isEmpty(this.postTag)) return 0
+      return this.postTag.count
+    },
+    color() {
+      if (_.isEmpty(this.postTag)) return '#000000'
+      return getTagColor(this.postTag)
+    },
+    hasCollected() {
+      if (_.isEmpty(this.postTag)) return false
+      return this.tagManagement.tags
+        .map(tag => tag.id)
+        .includes(this.postTag.id)
+    },
   },
   watch: {
     postTags(newPostTags) {
-      const tag = newPostTags.find(tag => tag.name === this.name)
-      if (tag !== undefined) {
-        this.count = tag.count
-        this.color = getTagColor(tag)
-      }
+      this.postTag = newPostTags.find(tag => tag.name === this.name)
     },
     total(newTotal) {
       this.setPosts(newTotal)
@@ -161,22 +167,15 @@ export default {
       const tag = [...this.totalTags.flat(), ...this.postTags].find(
         tag => tag.name === name,
       )
-      if (tag !== undefined) {
-        this.count = tag.count
-        this.color = getTagColor(tag)
-      } else {
-        this.count = 0
-        this.color = '#000000'
-        this.searchPostTag(name)
-      }
+      if (tag !== undefined) this.postTag = tag
+      else this.searchPostTag(name)
     },
     clickPost(post) {
       this.openLarger({ post, posts: this.total, loadMore: this.nextTag })
     },
-    selectTag(tag) {
-      if (this.tagmanagement.tags.map(tag => tag.id).includes(tag.id))
-        this.collectionUntag(tag.id)
-      else this.collectionTag(tag.id)
+    selectTag() {
+      if (this.hasCollected) this.collectionUntag(this.postTag.id)
+      else this.collectionTag(this.postTag.id)
     },
   },
   beforeRouteEnter(to, from, next) {

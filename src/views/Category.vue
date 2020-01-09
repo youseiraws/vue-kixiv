@@ -46,23 +46,23 @@
         </div>
       </template>
       <template #content v-if="!isTagEmpty">
-        <cover
-          v-for="tag in tags"
-          :key="tag.id"
-          :width="194"
-          :cover="categories[tag.name]"
-          @click="clickCover(tag.name)"
-        >
-          <div :style="{color:getTagColor(tag)}">{{tag.name}}</div>
-          <div class="white--text">{{tag.count}}</div>
-          <v-btn icon @click="selectTag(tag)">
-            <v-icon
-              v-if="tagmanagement.tags.map(tag=>tag.id).includes(tag.id)"
-              color="yellow"
-            >mdi-star</v-icon>
-            <v-icon v-else>mdi-star-outline</v-icon>
-          </v-btn>
-        </cover>
+        <v-hover #default="{hover}" v-for="tag in tags" :key="tag.id">
+          <cover :width="194" :cover="categories[tag.name]" @click="clickCover(tag.name)">
+            <div :style="{color:getTagColor(tag)}">{{tag.name}}</div>
+            <div class="white--text">{{tag.count}}</div>
+            <v-btn
+              v-show="hover||tagManagement.tags.map(tag=>tag.id).includes(tag.id)"
+              icon
+              @click.stop="selectTag(tag)"
+            >
+              <v-icon
+                v-if="tagManagement.tags.map(tag=>tag.id).includes(tag.id)"
+                color="yellow"
+              >mdi-star</v-icon>
+              <v-icon v-else>mdi-star-outline</v-icon>
+            </v-btn>
+          </cover>
+        </v-hover>
       </template>
       <template #footer-title>
         <v-pagination v-model="pagination" :length="size" :disabled="isSearching"></v-pagination>
@@ -112,7 +112,7 @@ export default {
       'hasCached',
       'isCaching',
     ]),
-    ...mapGetters('collection', ['tagmanagement']),
+    ...mapGetters('collection', ['tagManagement']),
   },
   watch: {
     pagination(newPagination) {
@@ -147,7 +147,7 @@ export default {
       this.$router.push({ name: 'tag', params: { name } })
     },
     selectTag(tag) {
-      if (this.tagmanagement.tags.map(tag => tag.id).includes(tag.id))
+      if (this.tagManagement.tags.map(tag => tag.id).includes(tag.id))
         this.untag(tag.id)
       else this.tag(tag.id)
     },

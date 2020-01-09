@@ -61,11 +61,10 @@
         </v-list-item-icon>
         <v-list-item-title>新建收藏集</v-list-item-title>
       </v-list-item>
-      <v-tab class="collection-tab" :href="`#${tagmanagement.name}`">
-        {{tagmanagement.name}}
-        <span class="grey--text ml-2">{{tagmanagement.tags.length}}</span>
+      <v-tab class="collection-tab" :href="`#${tagManagement.name}`">
+        {{tagManagement.name}}
+        <span class="grey--text ml-2">{{tagManagement.tags.length}}</span>
       </v-tab>
-      <v-spacer></v-spacer>
       <v-tab class="collection-tab" :href="`#${blacklist.name}`">
         {{blacklist.name}}
         <span class="grey--text ml-2">{{blacklist.posts.length}}</span>
@@ -77,8 +76,6 @@
           :value="collection.name"
         >
           <container
-            :gap="64"
-            :columns="5"
             :is-show-footer-left-indicator="hasPrevPage"
             :is-show-footer-right-indicator="hasNextPage"
             :is-show-refresh="false"
@@ -111,9 +108,10 @@
                 <template #action>
                   <v-checkbox
                     class="collection-checkbox"
-                    v-show="showCheckbox"
+                    v-show="showCheckbox&&isCollectionTab"
                     v-model="checkeds"
                     :value="post"
+                    @click.native.stop
                   ></v-checkbox>
                 </template>
               </post>
@@ -123,8 +121,10 @@
             </template>
           </container>
         </v-tab-item>
-        <v-tab-item :value="tagmanagement.name">
+        <v-tab-item :value="tagManagement.name">
           <container
+            :gap="64"
+            :columns="5"
             :is-show-footer-left-indicator="hasPrevPage"
             :is-show-footer-right-indicator="hasNextPage"
             :is-show-refresh="false"
@@ -163,7 +163,7 @@
               >
                 <div :style="{color:getTagColor(tag)}">{{tag.name}}</div>
                 <div class="white--text">{{tag.count}}</div>
-                <v-btn icon @click="untag(tag.id)">
+                <v-btn icon @click.stop="untag(tag.id)">
                   <v-icon color="yellow">mdi-star</v-icon>
                 </v-btn>
               </cover>
@@ -253,22 +253,24 @@ export default {
       return this.tab === TAG_MANAGEMENT
     },
     currentCollection() {
-      if (!isTagManagementTab)
+      if (!this.isTagManagementTab) {
         if (this.totalCollections !== undefined)
           return this.totalCollections.find(
             collection => collection.name === this.tab,
           )
-        else return this.tagManagement
+      } else return this.tagManagement
     },
     currentPosts() {
-      if (this.currentCollection === undefined && isTagManagementTab) return []
+      if (this.currentCollection === undefined && this.isTagManagementTab)
+        return []
       return this.currentCollection.posts.slice(
         (this.pagination - 1) * this.pageSize,
         this.pagination * this.pageSize,
       )
     },
     currentTags() {
-      if (this.currentCollection === undefined && !isTagManagementTab) return []
+      if (this.currentCollection === undefined && !this.isTagManagementTab)
+        return []
       return this.currentCollection.tags.slice(
         (this.pagination - 1) * this.pageSize,
         this.pagination * this.pageSize,
@@ -277,8 +279,8 @@ export default {
     currentLength() {
       if (this.currentCollection === undefined) return 0
       return Math.ceil(
-        this.currentCollection[!isTagManagementTab ? 'posts' : 'tags'].length /
-          this.pageSize,
+        this.currentCollection[!this.isTagManagementTab ? 'posts' : 'tags']
+          .length / this.pageSize,
       )
     },
     unblackedPosts() {
@@ -296,6 +298,7 @@ export default {
   watch: {
     tab(newTab) {
       this.pagination = 1
+      this.showCheckbox = false
     },
     pagination(newPagination) {
       this.checkAll = this.unblackedPosts.every(unblackedPost =>
@@ -377,6 +380,7 @@ export default {
       this.editCollectionSwitchs = new Array(this.collections.length).fill(
         false,
       )
+      this.loadCover()
     },
     clickCheckbox() {
       if (this.checkAll) this.checkeds.push(...this.unblackedPosts)
