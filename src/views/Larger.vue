@@ -5,6 +5,8 @@
         <div>
           <v-card v-if="isCropping" class="larger-container">
             <clipper-basic
+              class="mx-auto"
+              style="width:1000px;"
               ref="clipper"
               :src="getPostUrl(currentPost,'file')"
               :ratio="16/9"
@@ -37,7 +39,7 @@
             </v-carousel-item>
           </v-carousel>
           <v-item-group class="larger-actions d-flex flex-column justify-space-between">
-            <v-item>
+            <v-item class="larger-item">
               <post-hover-btn large>
                 <template #icon>
                   <v-icon>mdi-information-outline</v-icon>
@@ -51,7 +53,7 @@
                 </template>
               </post-hover-btn>
             </v-item>
-            <v-item>
+            <v-item class="larger-item">
               <post-hover-btn
                 large
                 :menu="menu"
@@ -74,18 +76,20 @@
                 </template>
               </post-hover-btn>
             </v-item>
-            <v-item>
+            <v-item class="larger-item">
               <post-black-btn :post="currentPost" large @post-blacked="closeLarger()"></post-black-btn>
             </v-item>
-            <v-item>
+            <v-item class="larger-item">
               <post-download-btn :post="currentPost" large></post-download-btn>
             </v-item>
-            <v-item>
-              <v-btn icon @click="cropPost()">
-                <v-icon>mdi-crop</v-icon>
-              </v-btn>
+            <v-item class="larger-item">
+              <div>
+                <v-btn icon large @click="cropPost()">
+                  <v-icon>mdi-crop</v-icon>
+                </v-btn>
+              </div>
             </v-item>
-            <v-item>
+            <v-item class="larger-item">
               <post-hover-btn large>
                 <template #icon>
                   <v-icon>mdi-tag-outline</v-icon>
@@ -100,15 +104,19 @@
               </post-hover-btn>
             </v-item>
             <v-spacer></v-spacer>
-            <v-item>
-              <v-btn icon @click="confirmCrop()">
-                <v-icon color="green">mdi-check-circle</v-icon>
-              </v-btn>
+            <v-item v-if="isCropping" class="larger-item">
+              <div>
+                <v-btn icon large @click="confirmCrop()">
+                  <v-icon color="green">mdi-check-circle</v-icon>
+                </v-btn>
+              </div>
             </v-item>
-            <v-item>
-              <v-btn icon @click="cancelCrop()">
-                <v-icon color="red">mdi-close-circle</v-icon>
-              </v-btn>
+            <v-item v-if="isCropping" class="larger-item">
+              <div>
+                <v-btn icon large @click="cancelCrop()">
+                  <v-icon color="red">mdi-close-circle</v-icon>
+                </v-btn>
+              </div>
             </v-item>
           </v-item-group>
         </div>
@@ -227,15 +235,23 @@ export default {
 }
 </script>
 
-<style scoped>
-.larger-container {
-  width: 84vw;
-}
+<style lang="scss">
+#larger {
+  .vertical.clip-area .img {
+    width: 100% !important;
+  }
+  .larger-container {
+    width: 84vw;
+  }
 
-.larger-actions {
-  position: fixed;
-  top: 16px;
-  right: 16px;
-  height: 40vh;
+  .larger-actions {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    height: 90vh;
+  }
+  .larger-item {
+    margin: 6px 0;
+  }
 }
 </style>
