@@ -3,8 +3,18 @@
     <v-overlay :value="overlay">
       <v-hover #default="{hover}">
         <div>
+          <v-card v-if="isCropping" class="larger-container">
+            <clipper-basic
+              ref="clipper"
+              :src="getPostUrl(currentPost,'file')"
+              :ratio="16/9"
+              :init-width="100"
+              :init-height="100"
+            ></clipper-basic>
+          </v-card>
           <v-carousel
-            class="larger-carousel"
+            v-else
+            class="larger-container"
             v-model="indexModel"
             :cycle="!hover&&cycle"
             :interval="interval"
@@ -71,6 +81,11 @@
               <post-download-btn :post="currentPost" large></post-download-btn>
             </v-item>
             <v-item>
+              <v-btn icon @click="cropPost()">
+                <v-icon>mdi-crop</v-icon>
+              </v-btn>
+            </v-item>
+            <v-item>
               <post-hover-btn large>
                 <template #icon>
                   <v-icon>mdi-tag-outline</v-icon>
@@ -83,6 +98,17 @@
                   </v-card>
                 </template>
               </post-hover-btn>
+            </v-item>
+            <v-spacer></v-spacer>
+            <v-item>
+              <v-btn icon @click="confirmCrop()">
+                <v-icon color="green">mdi-check-circle</v-icon>
+              </v-btn>
+            </v-item>
+            <v-item>
+              <v-btn icon @click="cancelCrop()">
+                <v-icon color="red">mdi-close-circle</v-icon>
+              </v-btn>
             </v-item>
           </v-item-group>
         </div>
@@ -119,6 +145,7 @@ export default {
       indexModel: 0,
       menu: true,
       openOnHover: true,
+      isCropping: false,
     }
   },
   computed: {
@@ -147,7 +174,7 @@ export default {
       )
     },
     cycle() {
-      return this.carouselsInterval !== 0
+      return this.carouselsInterval !== 0 && !this.isCropping
     },
     interval() {
       if (this.carouselsInterval !== 0) return this.carouselsInterval * 1000
@@ -185,12 +212,23 @@ export default {
       this.menu = visible
       this.openOnHover = !visible
     },
+    cropPost() {
+      this.isCropping = !this.isCropping
+    },
+    confirmCrop() {
+      const canvas = this.$refs.clipper.clip()
+      console.log(canvas.toDataURL())
+      this.isCropping = false
+    },
+    cancelCrop() {
+      this.isCropping = false
+    },
   },
 }
 </script>
 
 <style scoped>
-.larger-carousel {
+.larger-container {
   width: 84vw;
 }
 
