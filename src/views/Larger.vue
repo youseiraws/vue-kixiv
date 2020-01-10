@@ -6,9 +6,9 @@
           <v-card v-if="isCropping" class="larger-container">
             <clipper-basic
               class="mx-auto"
-              style="width:1000px;"
               ref="clipper"
-              :src="getPostUrl(currentPost,'file')"
+              :style="clipperBasicStyle"
+              :src="clipperBasicSrc"
               :ratio="16/9"
               :init-width="100"
               :init-height="100"
@@ -89,7 +89,7 @@
                 </v-btn>
               </div>
             </v-item>
-            <v-item class="larger-item">
+            <v-item v-show="couldCrop" class="larger-item">
               <post-hover-btn large>
                 <template #icon>
                   <v-icon>mdi-tag-outline</v-icon>
@@ -104,14 +104,14 @@
               </post-hover-btn>
             </v-item>
             <v-spacer></v-spacer>
-            <v-item v-if="isCropping" class="larger-item">
+            <v-item v-show="isCropping" class="larger-item">
               <div>
                 <v-btn icon large @click="confirmCrop()">
                   <v-icon color="green">mdi-check-circle</v-icon>
                 </v-btn>
               </div>
             </v-item>
-            <v-item v-if="isCropping" class="larger-item">
+            <v-item v-show="isCropping" class="larger-item">
               <div>
                 <v-btn icon large @click="cancelCrop()">
                   <v-icon color="red">mdi-close-circle</v-icon>
@@ -128,7 +128,7 @@
 <script>
 import { mapGetters, mapActions } from 'vuex'
 import _ from 'lodash'
-import { getPostUrl } from '../util/util'
+import { getPostUrl, imageToBase64 } from '../util/util'
 import {
   PostInfo,
   PostCollection,
@@ -187,6 +187,24 @@ export default {
     interval() {
       if (this.carouselsInterval !== 0) return this.carouselsInterval * 1000
     },
+    couldCrop() {
+      return this.currentPost.storage.file_url !== undefined
+    },
+    clipperBasicStyle() {
+      return {
+        width: `${(this.currentPost.width / this.currentPost.height) * 726}px`,
+      }
+    },
+    async clipperBasicSrc() {
+      const base64 = await imageToBase64(
+        this.getPostUrl(this.currentPost, 'file'),
+      )
+      const ext = this.currentPost.storage.file_url
+        .split('.')
+        .reverse()[0]
+        .toLowerCase()
+      return `data:image/${ext};base64,${base64}`
+    },
   },
   watch: {
     index(newIndex) {
@@ -225,7 +243,7 @@ export default {
     },
     confirmCrop() {
       const canvas = this.$refs.clipper.clip()
-      console.log(canvas.toDataURL())
+      window.atob(canvas.toDataURL().replace(/^data:image\/\w+;base64,/, ''))
       this.isCropping = false
     },
     cancelCrop() {

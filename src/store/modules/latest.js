@@ -54,7 +54,7 @@ const mutations = {
   [ADD_POSTS]: (state, posts) => {
     if (state.latest[state.date] === undefined)
       state.latest = { ...state.latest, [state.date]: [] }
-    state.latest[state.date].push(...posts)
+    state.latest[state.date].push(...posts.map(post => post.id))
   },
   [INIT_PAGE]: state => (state.page = 1),
   [ADD_PAGE]: state => state.page++,

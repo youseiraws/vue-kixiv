@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
+import imageToBase64 from 'image-to-base64'
 import api from '../api'
 
 const tagTypes = [
@@ -98,4 +99,5 @@ export {
   capitalToRating,
   downloadImage,
   downloadImages,
+  imageToBase64,
 }

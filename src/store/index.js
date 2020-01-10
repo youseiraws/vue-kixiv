@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import post from './modules/post'
 import larger from './modules/larger'
 import latest from './modules/latest'
 import random from './modules/random'
@@ -13,6 +14,7 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   modules: {
+    post,
     larger,
     latest,
     random,
