@@ -3,7 +3,7 @@
     <v-overlay :value="overlay">
       <v-hover #default="{hover}">
         <div>
-          <v-card v-if="isCropping" class="larger-container">
+          <v-card v-if="isCropping" class="larger-container d-flex align-center">
             <clipper-basic
               class="mx-auto"
               ref="clipper"
@@ -18,7 +18,7 @@
             v-else
             class="larger-container"
             v-model="indexModel"
-            :cycle="!hover&&cycle"
+            :cycle="!hover&&cycle&&!isLocked"
             :interval="interval"
             :continuous="false"
             height="100%"
@@ -38,7 +38,22 @@
               </v-card>
             </v-carousel-item>
           </v-carousel>
-          <v-item-group class="larger-actions d-flex flex-column justify-space-between">
+          <v-item-group
+            class="larger-actions actions-left d-flex flex-column justify-space-between"
+          >
+            <v-item class="larger-item">
+              <div>
+                <v-btn icon large @click="isLocked=!isLocked">
+                  <v-icon v-if="isLocked">mdi-lock-outline</v-icon>
+                  <v-icon v-else>mdi-lock-open-outline</v-icon>
+                </v-btn>
+              </div>
+            </v-item>
+            <v-spacer></v-spacer>
+          </v-item-group>
+          <v-item-group
+            class="larger-actions actions-right d-flex flex-column justify-space-between"
+          >
             <v-item class="larger-item">
               <post-hover-btn large>
                 <template #icon>
@@ -154,6 +169,8 @@ export default {
       menu: true,
       openOnHover: true,
       isCropping: false,
+      clipperBasicSrc: '',
+      isLocked: false,
     }
   },
   computed: {
@@ -191,19 +208,16 @@ export default {
       return this.currentPost.storage.file_url !== undefined
     },
     clipperBasicStyle() {
-      return {
-        width: `${(this.currentPost.width / this.currentPost.height) * 726}px`,
-      }
-    },
-    async clipperBasicSrc() {
-      const base64 = await imageToBase64(
-        this.getPostUrl(this.currentPost, 'file'),
-      )
-      const ext = this.currentPost.storage.file_url
-        .split('.')
-        .reverse()[0]
-        .toLowerCase()
-      return `data:image/${ext};base64,${base64}`
+      if (this.currentPost.width / this.currentPost.height > 16 / 9)
+        return {
+          height: `${(this.currentPost.height / this.currentPost.width) *
+            1290}px`,
+        }
+      else
+        return {
+          width: `${(this.currentPost.width / this.currentPost.height) *
+            726}px`,
+        }
     },
   },
   watch: {
@@ -214,6 +228,20 @@ export default {
     indexModel(newIndexModel) {
       if (!_.isFunction(this.loadMore)) return
       if (newIndexModel > this.count - 10) this.loadMore()
+    },
+    async currentPost(newCurrentPost) {
+      if (newCurrentPost === undefined) {
+        this.clipperBasicSrc = ''
+        return
+      }
+      const base64 = await imageToBase64(
+        this.getPostUrl(newCurrentPost, 'file'),
+      )
+      const ext = newCurrentPost.storage.file_url
+        .split('.')
+        .reverse()[0]
+        .toLowerCase()
+      this.clipperBasicSrc = `data:image/${ext};base64,${base64}`
     },
   },
   methods: {
@@ -260,13 +288,19 @@ export default {
   }
   .larger-container {
     width: 84vw;
+    height: 97vh;
   }
 
   .larger-actions {
     position: fixed;
     top: 16px;
-    right: 16px;
     height: 90vh;
+  }
+  .actions-left {
+    left: 16px;
+  }
+  .actions-right {
+    right: 16px;
   }
   .larger-item {
     margin: 6px 0;

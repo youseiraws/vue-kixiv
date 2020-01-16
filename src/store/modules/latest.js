@@ -3,7 +3,6 @@ import moment from 'moment'
 import api from '../../api'
 
 const dateFormat = 'YYYY-MM-DD'
-const urls = ['preview_url', 'sample_url', 'jpeg_url', 'file_url']
 
 /** mutations-types **/
 const ADD_POSTS = 'ADD_POSTS'
@@ -12,7 +11,6 @@ const ADD_PAGE = 'ADD_PAGE'
 const SET_DATE = 'SET_DATE'
 const ADD_DATE = 'ADD_DATE'
 const SUB_DATE = 'SUB_DATE'
-const UPDATE_DAILY = 'UPDATE_DAILY'
 const START_LOADING = 'START_LOADING'
 const FINISH_LOADING = 'FINISH_LOADING'
 const ALREADY_DAILY_LOADED = 'ALREADY_DAILY_LOADED'
@@ -26,7 +24,6 @@ const LOAD_DAILY = 'LOAD_DAILY'
 const PREV_DAILY = 'PREV_DAILY'
 const NEXT_DAILY = 'NEXT_DAILY'
 const REFRESH_DAILY = 'REFRESH_DAILY'
-const GET_NOT_CACHED_POSTS = 'GET_NOT_CACHED_POSTS'
 
 const state = {
   date: moment()
@@ -41,10 +38,17 @@ const state = {
 
 const getters = {
   date: state => state.date,
-  daily: state => state.latest[state.date],
-  total: state => Object.values(state.latest).flat(),
+  latest: (state, getters, rootState,rootGetters) =>
+    Object.fromEntries(
+      Object.entries(state.latest).map(([key, value]) => [
+        key,
+        value.map(id => rootGetters['post/posts'].find(post => post.id === id)),
+      ]),
+    ),
+  daily: (state, getters) => getters.latest[state.date],
+  total: (state, getters) => Object.values(getters.latest).flat(),
   isLoading: state => state.isLoading,
-  isDailyEmpty: state => _.isEmpty(state.latest[state.date]),
+  isDailyEmpty: (state, getters) => _.isEmpty(getters.latest[state.date]),
   hasNextDaily: state =>
     moment.utc(state.date, dateFormat).isBefore(moment.utc(), 'day'),
   hasCached: state => state.hasCached,
@@ -69,22 +73,6 @@ const mutations = {
       .utc(state.date, dateFormat)
       .subtract(1, 'days')
       .format(dateFormat)),
-  [UPDATE_DAILY]: (state, newPosts) => {
-    let daily = state.latest[state.date]
-    if (daily !== undefined) {
-      newPosts.forEach(newPost => {
-        const index = daily.findIndex(post => post.id === newPost.id)
-        if (index !== -1)
-          daily.splice(
-            index,
-            1,
-            Object.assign({}, daily[index], {
-              storage: { ...daily[index].storage, ...newPost.storage },
-            }),
-          )
-      })
-    }
-  },
   [START_LOADING]: state => (state.isLoading = true),
   [FINISH_LOADING]: state => (state.isLoading = false),
   [ALREADY_DAILY_LOADED]: state => (state.hasDailyLoaded = true),
@@ -110,6 +98,7 @@ const actions = {
 
     if (!_.isEmpty(result)) {
       commit(ADD_POSTS, result)
+      commit('post/ADD_POSTS', result, { root: true })
       commit(ADD_PAGE)
     } else {
       commit(ALREADY_DAILY_LOADED)
@@ -131,7 +120,11 @@ const actions = {
         await dispatch(REQUEST_POSTS)
       }
     } else {
-      const notCachedPosts = await dispatch(GET_NOT_CACHED_POSTS)
+      const notCachedPosts = await dispatch(
+        'post/GET_NOT_CACHED_POSTS',
+        getters.daily,
+        { root: true },
+      )
       if (!_.isEmpty(notCachedPosts)) {
         commit(NOT_YET_CACHED)
         let result
@@ -144,40 +137,25 @@ const actions = {
             posts: notCachedPosts,
           })
         }
-        if (!_.isEmpty(result)) commit(UPDATE_DAILY, result)
+        if (!_.isEmpty(result)) commit('post/ADD_POSTS', result, { root: true })
       } else commit(ALREADY_CACHED)
     }
     commit(FINISH_LOADING)
   },
   [PREV_DAILY]: async ({ commit, dispatch }) => {
     commit(SUB_DATE)
+    commit(NOT_YET_CACHED)
     await dispatch(LOAD_DAILY)
   },
   [NEXT_DAILY]: async ({ getters, commit, dispatch }) => {
     if (getters.hasNextDaily) {
       commit(ADD_DATE)
+      commit(NOT_YET_CACHED)
       await dispatch(LOAD_DAILY)
     }
   },
   [REFRESH_DAILY]: async ({ state, dispatch }) => {
     if (!state.hasCached) await dispatch(LOAD_DAILY)
-  },
-  [GET_NOT_CACHED_POSTS]: ({ state }) => {
-    const daily = state.latest[state.date]
-    if (daily === undefined) return []
-    return daily
-      .filter(
-        post =>
-          post.storage === undefined ||
-          urls.some(url => post.storage[url] === undefined),
-      )
-      .map(post =>
-        Object.assign(
-          {},
-          { id: post.id },
-          ...urls.map(url => ({ [url]: post[url] })),
-        ),
-      )
   },
 }
 
