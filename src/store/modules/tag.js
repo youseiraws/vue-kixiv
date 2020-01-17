@@ -1,8 +1,6 @@
 import _ from 'lodash'
 import api from '../../api'
 
-const urls = ['preview_url', 'sample_url', 'jpeg_url', 'file_url']
-
 /** mutations-types **/
 const ADD_POST_TAGS = 'ADD_POST_TAGS'
 const ADD_POSTS = 'ADD_POSTS'
@@ -13,7 +11,6 @@ const SUB_PAGE = 'SUB_PAGE'
 const INIT_NAME = 'INIT_NAME'
 const SET_NAME = 'SET_NAME'
 const SET_ORDER = 'SET_ORDER'
-const UPDATE_TAG = 'UPDATE_TAG'
 const CLEAR_TAGS = 'CLEAR_TAGS'
 const START_LOADING = 'START_LOADING'
 const FINISH_LOADING = 'FINISH_LOADING'
@@ -30,7 +27,6 @@ const PREV_TAG = 'PREV_TAG'
 const NEXT_TAG = 'NEXT_TAG'
 const SORT_TAG = 'SORT_TAG'
 const REFRESH_TAG = 'REFRESH_TAG'
-const GET_NOT_CACHED_POSTS = 'GET_NOT_CACHED_POSTS'
 
 const state = {
   postTags: [],
@@ -47,12 +43,16 @@ const getters = {
   postTags: state => state.postTags,
   page: state => state.page,
   index: state => state.page - 1,
-  size: state => state.tags.length,
   order: state => state.order,
-  tag: (state, getters) => state.tags[getters.index],
-  total: state => state.tags.flat(),
+  tags: (state, getters, rootState, rootGetters) =>
+    state.tags.map(tag =>
+      tag.map(id => rootGetters['post/posts'].find(post => post.id === id)),
+    ),
+  size: (state, getters) => getters.tags.length,
+  tag: (state, getters) => getters.tags[getters.index],
+  total: (state, getters) => getters.tags.flat(),
   isLoading: state => state.isLoading,
-  isTagEmpty: (state, getters) => _.isEmpty(state.tags[getters.index]),
+  isTagEmpty: (state, getters) => _.isEmpty(getters.tags[getters.index]),
   hasCached: state => state.hasCached,
   hasPrevPage: state => state.page > 1,
   hasNextPage: (state, getters) =>
@@ -61,7 +61,7 @@ const getters = {
 
 const mutations = {
   [ADD_POST_TAGS]: (state, postTags) => state.postTags.push(...postTags),
-  [ADD_POSTS]: (state, posts) => state.tags.push(posts),
+  [ADD_POSTS]: (state, posts) => state.tags.push(posts.map(post => post.id)),
   [INIT_PAGE]: state => (state.page = 1),
   [SET_PAGE]: (state, page) => (state.page = page),
   [ADD_PAGE]: state => state.page++,
@@ -69,22 +69,6 @@ const mutations = {
   [INIT_NAME]: state => (state.name = ''),
   [SET_NAME]: (state, name) => (state.name = name),
   [SET_ORDER]: (state, order) => (state.order = order),
-  [UPDATE_TAG]: (state, newPosts) => {
-    let tag = state.tags[state.page - 1]
-    if (tag !== undefined) {
-      newPosts.forEach(newPost => {
-        const index = tag.findIndex(post => post.id === newPost.id)
-        if (index !== -1)
-          tag.splice(
-            index,
-            1,
-            Object.assign({}, tag[index], {
-              storage: { ...tag[index].storage, ...newPost.storage },
-            }),
-          )
-      })
-    }
-  },
   [CLEAR_TAGS]: state => (state.tags = []),
   [START_LOADING]: state => (state.isLoading = true),
   [FINISH_LOADING]: state => (state.isLoading = false),
@@ -165,10 +149,16 @@ const actions = {
           break
       }
 
-      if (!_.isEmpty(result)) commit(ADD_POSTS, result)
-      else commit(ALREADY_LOADED)
+      if (!_.isEmpty(result)) {
+        commit(ADD_POSTS, result)
+        commit('post/ADD_POSTS', result, { root: true })
+      } else commit(ALREADY_LOADED)
     } else {
-      const notCachedPosts = await dispatch(GET_NOT_CACHED_POSTS)
+      const notCachedPosts = await dispatch(
+        'post/GET_NOT_CACHED_POSTS',
+        getters.tag,
+        { root: true },
+      )
       if (!_.isEmpty(notCachedPosts)) {
         commit(NOT_YET_CACHED)
         let result
@@ -181,7 +171,7 @@ const actions = {
             posts: notCachedPosts,
           })
         }
-        if (!_.isEmpty(result)) commit(UPDATE_TAG, result)
+        if (!_.isEmpty(result)) commit('post/ADD_POSTS', result, { root: true })
       } else commit(ALREADY_CACHED)
     }
     commit(FINISH_LOADING)
@@ -206,23 +196,6 @@ const actions = {
   },
   [REFRESH_TAG]: async ({ state, dispatch }) => {
     if (!state.hasCached) await dispatch(LOAD_TAG)
-  },
-  [GET_NOT_CACHED_POSTS]: ({ state, getters }) => {
-    const tag = state.tags[getters.index]
-    if (tag === undefined) return []
-    return tag
-      .filter(
-        post =>
-          post.storage === undefined ||
-          urls.some(url => post.storage[url] === undefined),
-      )
-      .map(post =>
-        Object.assign(
-          {},
-          { id: post.id },
-          ...urls.map(url => ({ [url]: post[url] })),
-        ),
-      )
   },
 }
 

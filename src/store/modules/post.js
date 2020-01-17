@@ -23,7 +23,7 @@ const mutations = {
         state.posts.splice(
           index,
           1,
-          Object.assign({}, state.posts[index], {
+          Object.assign({}, state.posts[index], addedPost, {
             storage: { ...state.posts[index].storage, ...addedPost.storage },
           }),
         )

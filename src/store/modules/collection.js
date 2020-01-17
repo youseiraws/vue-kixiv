@@ -38,7 +38,13 @@ const getters = {
     state.collections.find(collection => collection.name === '黑名单'),
   tagManagement: state =>
     state.collections.find(collection => collection.name === '标签管理'),
-  categories: state => state.categories,
+  categories: (state, getters, rootState, rootGetters) =>
+    Object.fromEntries(
+      Object.entries(state.categories).map(([key, value]) => [
+        key,
+        rootGetters['post/posts'].find(post => post.id === value),
+      ]),
+    ),
   isLoading: state => state.isLoading,
 }
 
@@ -47,7 +53,7 @@ const mutations = {
   [ADD_COVER]: (state, payload) => {
     if (state.categories[payload.tag] === undefined)
       state.categories = Object.assign({}, state.categories, {
-        [payload.tag]: payload.post,
+        [payload.tag]: payload.post.id,
       })
   },
   [START_LOADING]: state => (state.isLoading = true),
@@ -169,6 +175,7 @@ const actions = {
             tag: tag.name,
             post: result[0],
           })
+          commit('post/ADD_POSTS', result, { root: true })
         }
       }
     }

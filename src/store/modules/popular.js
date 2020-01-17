@@ -3,7 +3,6 @@ import moment from 'moment'
 import api from '../../api'
 
 const dateFormat = 'YYYY-MM-DD'
-const urls = ['preview_url', 'sample_url', 'jpeg_url', 'file_url']
 
 /** mutations-types **/
 const ADD_POSTS = 'ADD_POSTS'
@@ -12,7 +11,6 @@ const SET_DATE = 'SET_DATE'
 const ADD_DATE = 'ADD_DATE'
 const SUB_DATE = 'SUB_DATE'
 const SET_TYPE = 'SET_TYPE'
-const UPDATE_DURATION = 'UPDATE_DURATION'
 const CLEAR_POPULAR = 'CLEAR_POPULAR'
 const START_LOADING = 'START_LOADING'
 const FINISH_LOADING = 'FINISH_LOADING'
@@ -25,7 +23,6 @@ const PREV_DURATION = 'PREV_DURATION'
 const NEXT_DURATION = 'NEXT_DURATION'
 const SEARCH_DURATION = 'SEARCH_DURATION'
 const REFRESH_DURATION = 'REFRESH_DURATION'
-const GET_NOT_CACHED_POSTS = 'GET_NOT_CACHED_POSTS'
 
 const state = {
   date: moment.utc().subtract(1, 'days'),
@@ -49,11 +46,18 @@ const getters = {
   },
   formatedDate: (state, getters) => getters.startDate.format(dateFormat),
   type: state => state.type,
-  duration: (state, getters) => state.popular[getters.formatedDate],
-  total: state => Object.values(state.popular).flat(),
+  popular: (state, getters, rootState, rootGetters) =>
+    Object.fromEntries(
+      Object.entries(state.popular).map(([key, value]) => [
+        key,
+        value.map(id => rootGetters['post/posts'].find(post => post.id === id)),
+      ]),
+    ),
+  duration: (state, getters) => getters.popular[getters.formatedDate],
+  total: state => Object.values(getters.popular).flat(),
   isLoading: state => state.isLoading,
   isDurationEmpty: (state, getters) =>
-    _.isEmpty(state.popular[getters.formatedDate]),
+    _.isEmpty(getters.popular[getters.formatedDate]),
   hasNextDuration: state =>
     state.date.isBefore(
       moment.utc().subtract(1, 'days'),
@@ -66,7 +70,7 @@ const mutations = {
   [ADD_POSTS]: (state, { date, posts }) =>
     (state.popular = {
       ...state.popular,
-      [date.format(dateFormat)]: posts,
+      [date.format(dateFormat)]: posts.map(post => post.id),
     }),
   [INIT_DATE]: state => (state.date = moment.utc().subtract(1, 'days')),
   [SET_DATE]: (state, date) => (state.date = date),
@@ -75,22 +79,6 @@ const mutations = {
   [SUB_DATE]: state =>
     (state.date = state.date.clone().subtract(1, `${state.type}s`)),
   [SET_TYPE]: (state, type) => (state.type = type),
-  [UPDATE_DURATION]: (state, { date, newPosts }) => {
-    let duration = state.popular[date.format(dateFormat)]
-    if (duration !== undefined) {
-      newPosts.forEach(newPost => {
-        const index = duration.findIndex(post => post.id === newPost.id)
-        if (index !== -1)
-          duration.splice(
-            index,
-            1,
-            Object.assign({}, duration[index], {
-              storage: { ...duration[index].storage, ...newPost.storage },
-            }),
-          )
-      })
-    }
-  },
   [CLEAR_POPULAR]: state => (state.popular = {}),
   [START_LOADING]: state => (state.isLoading = true),
   [FINISH_LOADING]: state => (state.isLoading = false),
@@ -124,10 +112,16 @@ const actions = {
           year: getters.startDate.year(),
         })
       }
-      if (!_.isEmpty(result))
+      if (!_.isEmpty(result)) {
         commit(ADD_POSTS, { date: getters.startDate, posts: result })
+        commit('post/ADD_POSTS', result, { root: true })
+      }
     } else {
-      const notCachedPosts = await dispatch(GET_NOT_CACHED_POSTS)
+      const notCachedPosts = await dispatch(
+        'post/GET_NOT_CACHED_POSTS',
+        getters.duration,
+        { root: true },
+      )
       if (!_.isEmpty(notCachedPosts)) {
         commit(NOT_YET_CACHED)
         let result
@@ -140,8 +134,7 @@ const actions = {
             posts: notCachedPosts,
           })
         }
-        if (!_.isEmpty(result))
-          commit(UPDATE_DURATION, { date: getters.startDate, newPosts: result })
+        if (!_.isEmpty(result)) commit('post/ADD_POSTS', result, { root: true })
       } else commit(ALREADY_CACHED)
     }
     commit(FINISH_LOADING)
@@ -165,23 +158,6 @@ const actions = {
   },
   [REFRESH_DURATION]: async ({ state, dispatch }) => {
     if (!state.hasCached) await dispatch(LOAD_DURATION)
-  },
-  [GET_NOT_CACHED_POSTS]: ({ state, getters }) => {
-    const duration = state.popular[getters.formatedDate]
-    if (duration === undefined) return []
-    return duration
-      .filter(
-        post =>
-          post.storage === undefined ||
-          urls.some(url => post.storage[url] === undefined),
-      )
-      .map(post =>
-        Object.assign(
-          {},
-          { id: post.id },
-          ...urls.map(url => ({ [url]: post[url] })),
-        ),
-      )
   },
 }
 

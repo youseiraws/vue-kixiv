@@ -1,15 +1,12 @@
 import _ from 'lodash'
 import api from '../../api'
 
-const urls = ['preview_url', 'sample_url', 'jpeg_url', 'file_url']
-
 /** mutations-types **/
 const ADD_POSTS = 'ADD_POSTS'
 const INIT_PAGE = 'INIT_PAGE'
 const SET_PAGE = 'SET_PAGE'
 const ADD_PAGE = 'ADD_PAGE'
 const SUB_PAGE = 'SUB_PAGE'
-const UPDATE_RANDOM = 'UPDATE_RANDOM'
 const CLEAR_RANDOMS = 'CLEAR_RANDOMS'
 const SET_TAGS = 'SET_TAGS'
 const CLEAR_ITEMS = 'CLEAR_ITEMS'
@@ -29,7 +26,6 @@ const PREV_RANDOM = 'PREV_RANDOM'
 const NEXT_RANDOM = 'NEXT_RANDOM'
 const SEARCH_RANDOM = 'SEARCH_RANDOM'
 const REFRESH_RANDOM = 'REFRESH_RANDOM'
-const GET_NOT_CACHED_POSTS = 'GET_NOT_CACHED_POSTS'
 const SEARCH_TAG = 'SEARCH_TAG'
 
 const state = {
@@ -46,13 +42,17 @@ const state = {
 const getters = {
   page: state => state.page,
   index: state => state.page - 1,
-  size: state => state.randoms.length,
-  random: (state, getters) => state.randoms[getters.index],
-  total: state => state.randoms.flat(),
+  randoms: (state, getters, rootState, rootGetters) =>
+    state.randoms.map(random =>
+      random.map(id => rootGetters['post/posts'].find(post => post.id === id)),
+    ),
+  size: (state, getters) => getters.randoms.length,
+  random: (state, getters) => getters.randoms[getters.index],
+  total: (state, getters) => getters.randoms.flat(),
   tagStr: state => state.tags.map(tag => tag.name).join(' '),
   items: state => state.items,
   isLoading: state => state.isLoading,
-  isRandomEmpty: (state, getters) => _.isEmpty(state.randoms[getters.index]),
+  isRandomEmpty: (state, getters) => _.isEmpty(getters.randoms[getters.index]),
   hasCached: state => state.hasCached,
   hasPrevPage: state => state.page > 1,
   hasNextPage: (state, getters) =>
@@ -61,27 +61,11 @@ const getters = {
 }
 
 const mutations = {
-  [ADD_POSTS]: (state, posts) => state.randoms.push(posts),
+  [ADD_POSTS]: (state, posts) => state.randoms.push(posts.map(post => post.id)),
   [INIT_PAGE]: state => (state.page = 1),
   [SET_PAGE]: (state, page) => (state.page = page),
   [ADD_PAGE]: state => state.page++,
   [SUB_PAGE]: state => state.page--,
-  [UPDATE_RANDOM]: (state, newPosts) => {
-    let random = state.randoms[state.page - 1]
-    if (random !== undefined) {
-      newPosts.forEach(newPost => {
-        const index = random.findIndex(post => post.id === newPost.id)
-        if (index !== -1)
-          random.splice(
-            index,
-            1,
-            Object.assign({}, random[index], {
-              storage: { ...random[index].storage, ...newPost.storage },
-            }),
-          )
-      })
-    }
-  },
   [CLEAR_RANDOMS]: state => (state.randoms = []),
   [SET_TAGS]: (state, tags) => (state.tags = tags),
   [CLEAR_ITEMS]: state =>
@@ -120,10 +104,16 @@ const actions = {
           tags: getters.tagStr,
         })
       }
-      if (!_.isEmpty(result)) commit(ADD_POSTS, result)
-      else commit(ALREADY_LOADED)
+      if (!_.isEmpty(result)) {
+        commit(ADD_POSTS, result)
+        commit('post/ADD_POSTS', result, { root: true })
+      } else commit(ALREADY_LOADED)
     } else {
-      const notCachedPosts = await dispatch(GET_NOT_CACHED_POSTS)
+      const notCachedPosts = await dispatch(
+        'post/GET_NOT_CACHED_POSTS',
+        getters.random,
+        { root: true },
+      )
       if (!_.isEmpty(notCachedPosts)) {
         commit(NOT_YET_CACHED)
         let result
@@ -136,7 +126,7 @@ const actions = {
             posts: notCachedPosts,
           })
         }
-        if (!_.isEmpty(result)) commit(UPDATE_RANDOM, result)
+        if (!_.isEmpty(result)) commit('post/ADD_POSTS', result, { root: true })
       } else commit(ALREADY_CACHED)
     }
     commit(FINISH_LOADING)
@@ -161,23 +151,6 @@ const actions = {
   },
   [REFRESH_RANDOM]: async ({ state, dispatch }) => {
     if (!state.hasCached) await dispatch(LOAD_RANDOM)
-  },
-  [GET_NOT_CACHED_POSTS]: ({ state, getters }) => {
-    const random = state.randoms[getters.index]
-    if (random === undefined) return []
-    return random
-      .filter(
-        post =>
-          post.storage === undefined ||
-          urls.some(url => post.storage[url] === undefined),
-      )
-      .map(post =>
-        Object.assign(
-          {},
-          { id: post.id },
-          ...urls.map(url => ({ [url]: post[url] })),
-        ),
-      )
   },
   [SEARCH_TAG]: async ({ state, commit }, name) => {
     if (state.isSearching) return

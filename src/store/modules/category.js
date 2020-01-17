@@ -1,8 +1,6 @@
 import _ from 'lodash'
 import api from '../../api'
 
-const urls = ['preview_url', 'sample_url']
-
 /** mutations-types **/
 const INIT_PAGE = 'INIT_PAGE'
 const SET_PAGE = 'SET_PAGE'
@@ -14,7 +12,6 @@ const ADD_TAG = 'ADD_TAG'
 const REMOVE_TAG = 'REMOVE_TAG'
 const CLEAR_TAGS = 'CLEAR_TAGS'
 const ADD_COVER = 'ADD_COVER'
-const UPDATE_COVER = 'UPDATE_COVER'
 const START_SEARCHING = 'START_SEARCHING'
 const FINISH_SEARCHING = 'FINISH_SEARCHING'
 const ALREADY_SEARCHED = 'ALREADY_SEARCHED'
@@ -34,7 +31,6 @@ const SEARCH_TAG = 'SEARCH_TAG'
 const LOAD_COVER = 'LOAD_COVER'
 const CACHE_COVER = 'CACHE_COVER'
 const REFRESH_CATEGORY = 'REFRESH_CATEGORY'
-const GET_NOT_CACHED_POSTS = 'GET_NOT_CACHED_POSTS'
 
 const state = {
   page: 1,
@@ -57,7 +53,13 @@ const getters = {
   type: state => state.type,
   tags: (state, getters) => state.totalTags[getters.index],
   totalTags: state => state.totalTags,
-  categories: state => state.categories,
+  categories: (state, getters, rootState, rootGetters) =>
+    Object.fromEntries(
+      Object.entries(state.categories).map(([key, value]) => [
+        key,
+        rootGetters['post/posts'].find(post => post.id === value),
+      ]),
+    ),
   isSearching: state => state.isSearching,
   isTagEmpty: (state, getters) => _.isEmpty(state.totalTags[getters.index]),
   hasPrevPage: state => state.page > 1,
@@ -83,26 +85,8 @@ const mutations = {
   [ADD_COVER]: (state, payload) => {
     if (state.categories[payload.tag] === undefined)
       state.categories = Object.assign({}, state.categories, {
-        [payload.tag]: payload.post,
+        [payload.tag]: payload.post.id,
       })
-  },
-  [UPDATE_COVER]: (state, newPosts) => {
-    newPosts.forEach(newPost => {
-      const oldPost = Object.entries(state.categories).find(
-        ([tag, post]) => post.id === newPost.id,
-      )
-      if (oldPost !== undefined)
-        state.categories[oldPost[0]] = Object.assign(
-          {},
-          state.categories[oldPost[0]],
-          {
-            storage: {
-              ...state.categories[oldPost[0]].storage,
-              ...newPost.storage,
-            },
-          },
-        )
-    })
   },
   [START_SEARCHING]: state => (state.isSearching = true),
   [FINISH_SEARCHING]: state => (state.isSearching = false),
@@ -183,43 +167,32 @@ const actions = {
             tag: noCoverTag.name,
             post: result[0],
           })
+          commit('post/ADD_POSTS', result, { root: true })
           commit(NOT_YET_CACHED)
         } else commit(REMOVE_TAG, noCoverTag)
       } else break
     }
     commit(FINISH_LOADING)
   },
-  [CACHE_COVER]: async ({ state, commit, dispatch }) => {
+  [CACHE_COVER]: async ({ state, getters, commit, dispatch }) => {
     if (state.isCaching) return
     commit(START_CACHING)
-    const notCachedPosts = await dispatch(GET_NOT_CACHED_POSTS)
+    const notCachedPosts = await dispatch(
+      'post/GET_NOT_CACHED_POSTS',
+      Object.values(getters.categories),
+      { root: true },
+    )
     if (!_.isEmpty(notCachedPosts)) {
       commit(NOT_YET_CACHED)
       const result = await api.post('/cache', {
         posts: notCachedPosts,
       })
-      if (!_.isEmpty(result)) commit(UPDATE_COVER, result)
+      if (!_.isEmpty(result)) commit('post/ADD_POSTS', result, { root: true })
     } else commit(ALREADY_CACHED)
     commit(FINISH_CACHING)
   },
   [REFRESH_CATEGORY]: async ({ state, dispatch }) => {
     if (!state.hasCached) await dispatch(CACHE_COVER)
-  },
-  [GET_NOT_CACHED_POSTS]: ({ state }) => {
-    if (_.isEmpty(state.categories)) return
-    return Object.values(state.categories)
-      .filter(
-        post =>
-          post.storage === undefined ||
-          urls.some(url => post.storage[url] === undefined),
-      )
-      .map(post =>
-        Object.assign(
-          {},
-          { id: post.id },
-          ...urls.map(url => ({ [url]: post[url] })),
-        ),
-      )
   },
 }
 
