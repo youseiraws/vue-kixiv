@@ -135,7 +135,7 @@ export default {
       this.postTag = newPostTags.find(tag => tag.name === this.name)
     },
     total(newTotal) {
-      this.setPosts(newTotal)
+      this.setPosts({ tag: 'TAG', posts: newTotal })
     },
     pagination(newPagination) {
       this.loadTag({ page: newPagination })
@@ -171,7 +171,12 @@ export default {
       else this.searchPostTag(name)
     },
     clickPost(post) {
-      this.openLarger({ post, posts: this.total, loadMore: this.nextTag })
+      this.openLarger({
+        tag: 'TAG',
+        post,
+        posts: this.total,
+        loadMore: this.nextTag,
+      })
     },
     selectTag() {
       if (this.hasCollected) this.collectionUntag(this.postTag.id)

@@ -21,6 +21,7 @@ const UNBLACK = 'UNBLACK'
 const TAG = 'TAG'
 const UNTAG = 'UNTAG'
 const LOAD_COVER = 'LOAD_COVER'
+const HANDLE_RESULT = 'HANDLE_RESULT'
 
 const state = {
   collections: [],
@@ -29,15 +30,23 @@ const state = {
 }
 
 const getters = {
-  collections: state =>
-    state.collections.filter(
+  collections: (state, getters, rootState, rootGetters) =>
+    state.collections.map(collection =>
+      Object.assign({}, collection, {
+        posts: collection.posts.map(id =>
+          rootGetters['post/posts'].find(post => post.id === id),
+        ),
+      }),
+    ),
+  favorites: (state, getters) =>
+    getters.collections.filter(
       collection =>
         collection.name !== '黑名单' && collection.name !== '标签管理',
     ),
-  blacklist: state =>
-    state.collections.find(collection => collection.name === '黑名单'),
-  tagManagement: state =>
-    state.collections.find(collection => collection.name === '标签管理'),
+  blacklist: (state, getters) =>
+    getters.collections.find(collection => collection.name === '黑名单'),
+  tagManagement: (state, getters) =>
+    getters.collections.find(collection => collection.name === '标签管理'),
   categories: (state, getters, rootState, rootGetters) =>
     Object.fromEntries(
       Object.entries(state.categories).map(([key, value]) => [
@@ -49,7 +58,12 @@ const getters = {
 }
 
 const mutations = {
-  [SET_COLLECTIONS]: (state, collections) => (state.collections = collections),
+  [SET_COLLECTIONS]: (state, collections) =>
+    (state.collections = collections.map(collection =>
+      Object.assign({}, collection, {
+        posts: collection.posts.map(post => post.id),
+      }),
+    )),
   [ADD_COVER]: (state, payload) => {
     if (state.categories[payload.tag] === undefined)
       state.categories = Object.assign({}, state.categories, {
@@ -61,7 +75,7 @@ const mutations = {
 }
 
 const actions = {
-  [ADD]: async ({ commit }, name) => {
+  [ADD]: async ({ dispatch }, name) => {
     if (_.isEmpty(name)) return
     let result
     try {
@@ -69,9 +83,9 @@ const actions = {
     } catch {
       result = await api.get(`${baseUrl}/add`, { name })
     }
-    if (!_.isEmpty(result)) commit(SET_COLLECTIONS, result)
+    if (!_.isEmpty(result)) dispatch(HANDLE_RESULT, result)
   },
-  [EDIT]: async ({ commit }, { oldName, newName }) => {
+  [EDIT]: async ({ dispatch }, { oldName, newName }) => {
     if (_.isEqual(oldName, newName) || _.isEmpty(newName)) return
     let result
     try {
@@ -85,18 +99,18 @@ const actions = {
         newname: newName,
       })
     }
-    if (!_.isEmpty(result)) commit(SET_COLLECTIONS, result)
+    if (!_.isEmpty(result)) dispatch(HANDLE_RESULT, result)
   },
-  [REMOVE]: async ({ commit }, name) => {
+  [REMOVE]: async ({ dispatch }, name) => {
     let result
     try {
       result = await api.get(`${baseUrl}/remove`, { name })
     } catch {
       result = await api.get(`${baseUrl}/remove`, { name })
     }
-    if (!_.isEmpty(result)) commit(SET_COLLECTIONS, result)
+    if (!_.isEmpty(result)) dispatch(HANDLE_RESULT, result)
   },
-  [LIST]: async ({ state, commit }) => {
+  [LIST]: async ({ state, commit, dispatch }) => {
     if (state.isLoading) return
     commit(START_LOADING)
     let result
@@ -105,62 +119,62 @@ const actions = {
     } catch {
       result = await api.get(`${baseUrl}/list`)
     }
-    if (!_.isEmpty(result)) commit(SET_COLLECTIONS, result)
+    if (!_.isEmpty(result)) dispatch(HANDLE_RESULT, result)
     commit(FINISH_LOADING)
   },
-  [LIKE]: async ({ commit }, { name, id }) => {
+  [LIKE]: async ({ dispatch }, { name, id }) => {
     let result
     try {
       result = await api.get(`${baseUrl}/like`, { name, id })
     } catch {
       result = await api.get(`${baseUrl}/like`, { name, id })
     }
-    if (!_.isEmpty(result)) commit(SET_COLLECTIONS, result)
+    if (!_.isEmpty(result)) dispatch(HANDLE_RESULT, result)
   },
-  [DISLIKE]: async ({ commit }, { name, id }) => {
+  [DISLIKE]: async ({ dispatch }, { name, id }) => {
     let result
     try {
       result = await api.get(`${baseUrl}/dislike`, { name, id })
     } catch {
       result = await api.get(`${baseUrl}/dislike`, { name, id })
     }
-    if (!_.isEmpty(result)) commit(SET_COLLECTIONS, result)
+    if (!_.isEmpty(result)) dispatch(HANDLE_RESULT, result)
   },
-  [BLACK]: async ({ commit }, id) => {
+  [BLACK]: async ({ dispatch }, id) => {
     let result
     try {
       result = await api.get(`${baseUrl}/black`, { id })
     } catch {
       result = await api.get(`${baseUrl}/black`, { id })
     }
-    if (!_.isEmpty(result)) commit(SET_COLLECTIONS, result)
+    if (!_.isEmpty(result)) dispatch(HANDLE_RESULT, result)
   },
-  [UNBLACK]: async ({ commit }, id) => {
+  [UNBLACK]: async ({ dispatch }, id) => {
     let result
     try {
       result = await api.get(`${baseUrl}/unblack`, { id })
     } catch {
       result = await api.get(`${baseUrl}/unblack`, { id })
     }
-    if (!_.isEmpty(result)) commit(SET_COLLECTIONS, result)
+    if (!_.isEmpty(result)) dispatch(HANDLE_RESULT, result)
   },
-  [TAG]: async ({ commit }, id) => {
+  [TAG]: async ({ dispatch }, id) => {
     let result
     try {
       result = await api.get(`${baseUrl}/tag`, { id })
     } catch {
       result = await api.get(`${baseUrl}/tag`, { id })
     }
-    if (!_.isEmpty(result)) commit(SET_COLLECTIONS, result)
+    if (!_.isEmpty(result)) dispatch(HANDLE_RESULT, result)
   },
-  [UNTAG]: async ({ commit }, id) => {
+  [UNTAG]: async ({ dispatch }, id) => {
     let result
     try {
       result = await api.get(`${baseUrl}/untag`, { id })
     } catch {
       result = await api.get(`${baseUrl}/untag`, { id })
     }
-    if (!_.isEmpty(result)) commit(SET_COLLECTIONS, result)
+    if (!_.isEmpty(result)) dispatch(HANDLE_RESULT, result)
   },
   [LOAD_COVER]: async ({ state, getters, commit }) => {
     if (state.isLoading) return
@@ -180,6 +194,14 @@ const actions = {
       }
     }
     commit(FINISH_LOADING)
+  },
+  [HANDLE_RESULT]: ({ commit }, result) => {
+    commit(SET_COLLECTIONS, result)
+    commit(
+      'post/ADD_POSTS',
+      result.map(collection => collection.posts).flat(),
+      { root: true },
+    )
   },
 }
 

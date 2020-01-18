@@ -25,13 +25,15 @@ export default {
   },
   computed: {
     couldDownload() {
-      return this.post.storage.file_url !== undefined
+      return (
+        this.post.storage.crop_url !== undefined ||
+        this.post.storage.file_url !== undefined
+      )
     },
   },
   methods: {
     download() {
-      if (this.post.storage.file_url === undefined) return
-      downloadImage(this.post.storage.file_url)
+      downloadImage(this.post.storage.crop_url || this.post.storage.file_url)
     },
   },
 }

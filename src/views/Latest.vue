@@ -80,7 +80,7 @@ export default {
   },
   watch: {
     total(newTotal) {
-      this.setPosts(newTotal)
+      this.setPosts({ tag: 'LATEST', posts: newTotal })
     },
     pickerDate(newPickerDate) {
       this.menu = false
@@ -101,6 +101,7 @@ export default {
     ...mapActions('larger', { openLarger: 'OPEN_LARGER' }),
     clickPost(post) {
       this.openLarger({
+        tag: 'LATEST',
         post,
         posts: this.total,
         loadMore: this.prevDaily,

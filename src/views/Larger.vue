@@ -128,7 +128,7 @@
             </v-item>
             <v-item v-show="isCropping" class="larger-item">
               <div>
-                <v-btn icon large @click="cancelCrop()">
+                <v-btn icon light large @click="cancelCrop()">
                   <v-icon color="red">mdi-close-circle</v-icon>
                 </v-btn>
               </div>
@@ -230,13 +230,14 @@ export default {
       if (newIndexModel > this.count - 10) this.loadMore()
     },
     async currentPost(newCurrentPost) {
-      if (newCurrentPost === undefined) {
+      if (
+        newCurrentPost === undefined ||
+        newCurrentPost.storage.file_url === undefined
+      ) {
         this.clipperBasicSrc = ''
         return
       }
-      const base64 = await imageToBase64(
-        this.getPostUrl(newCurrentPost, 'file'),
-      )
+      const base64 = await imageToBase64(newCurrentPost.storage.file_url)
       const ext = newCurrentPost.storage.file_url
         .split('.')
         .reverse()[0]
@@ -245,6 +246,7 @@ export default {
     },
   },
   methods: {
+    ...mapActions('post', { crop: 'CROP' }),
     ...mapActions('larger', { closeLarger: 'CLOSE_LARGER' }),
     ...mapActions('collection', {
       add: 'ADD',
@@ -269,9 +271,12 @@ export default {
     cropPost() {
       this.isCropping = !this.isCropping
     },
-    confirmCrop() {
+    async confirmCrop() {
       const canvas = this.$refs.clipper.clip()
-      window.atob(canvas.toDataURL().replace(/^data:image\/\w+;base64,/, ''))
+      await this.crop({
+        post: this.currentPost,
+        crop: canvas.toDataURL().replace(/^data:image\/\w+;base64,/, ''),
+      })
       this.isCropping = false
     },
     cancelCrop() {

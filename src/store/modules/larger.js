@@ -1,6 +1,8 @@
 /** mutations-types **/
 const SHOW_LARGER = 'SHOW_LARGER'
 const HIDE_LARGER = 'HIDE_LARGER'
+const INIT_TAG = 'INIT_TAG'
+const SET_TAG = 'SET_TAG'
 const INIT_POST = 'INIT_POST'
 const SET_POST = 'SET_POST'
 const CLEAR_POSTS = 'CLEAR_POSTS'
@@ -14,6 +16,7 @@ const CLOSE_LARGER = 'CLOSE_LARGER'
 
 const state = {
   overlay: false,
+  tag: '',
   post: {},
   posts: [],
   loadMore: null,
@@ -29,22 +32,28 @@ const getters = {
 const mutations = {
   [SHOW_LARGER]: state => (state.overlay = true),
   [HIDE_LARGER]: state => (state.overlay = false),
+  [INIT_TAG]: state => (state.tag = ''),
+  [SET_TAG]: (state, tag) => (state.tag = tag),
   [INIT_POST]: state => (state.post = {}),
   [SET_POST]: (state, post) => (state.post = post),
   [CLEAR_POSTS]: state => (state.posts = []),
-  [SET_POSTS]: (state, posts) => (state.posts = posts),
+  [SET_POSTS]: (state, payload) => {
+    if (state.tag === payload.tag) state.posts = payload.posts
+  },
   [INIT_LOAD_MORE]: state => (state.loadMore = null),
   [SET_LOAD_MORE]: (state, loadMore) => (state.loadMore = loadMore),
 }
 
 const actions = {
   [OPEN_LARGER]: ({ commit }, payload) => {
+    commit(SET_TAG, payload.tag)
     commit(SET_POST, payload.post)
-    commit(SET_POSTS, payload.posts)
+    commit(SET_POSTS, { tag: payload.tag, posts: payload.posts })
     commit(SET_LOAD_MORE, payload.loadMore)
     commit(SHOW_LARGER)
   },
   [CLOSE_LARGER]: ({ commit }) => {
+    commit(INIT_TAG)
     commit(INIT_POST)
     commit(CLEAR_POSTS)
     commit(INIT_LOAD_MORE)

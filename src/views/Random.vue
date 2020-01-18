@@ -114,7 +114,7 @@ export default {
   },
   watch: {
     total(newTotal) {
-      this.setPosts(newTotal)
+      this.setPosts({ tag: 'RANDOM', posts: newTotal })
     },
     pagination(newPagination) {
       this.loadRandom(newPagination)
@@ -141,7 +141,12 @@ export default {
     ...mapMutations('larger', { setPosts: 'SET_POSTS' }),
     ...mapActions('larger', { openLarger: 'OPEN_LARGER' }),
     clickPost(post) {
-      this.openLarger({ post, posts: this.total, loadMore: this.nextRandom })
+      this.openLarger({
+        tag: 'RANDOM',
+        post,
+        posts: this.total,
+        loadMore: this.nextRandom,
+      })
     },
     getTagColor(tag) {
       return getTagColor(tag)

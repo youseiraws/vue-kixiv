@@ -48,12 +48,10 @@ function getTagColor(tag) {
 
 function getPostUrl(post, postType) {
   if (_.isEmpty(post)) return
-  if (
-    post.storage === undefined ||
-    post.storage[`${postType}_url`] === undefined
-  )
-    return post[`${postType}_url`]
-  else return post.storage[`${postType}_url`]
+  if (post.storage !== undefined) {
+    if (post.storage.crop_url !== undefined) return post.storage.crop_url
+    else return post.storage[`${postType}_url`]
+  } else return post[`${postType}_url`]
 }
 
 function capitalToRating(rating) {
@@ -70,6 +68,8 @@ function capitalToRating(rating) {
 }
 
 async function downloadImage(url) {
+  if (_.isEmpty(url)) return
+  url = url.split('?ver=')[0]
   saveAs(url, url.split('/').reverse()[0])
 }
 
@@ -82,6 +82,7 @@ async function downloadImages(urls, name) {
   const zip = new JSZip()
   await Promise.all(
     urls.map(async url => {
+      url = url.split('?ver=')[0]
       const result = await api.download(url)
       const blob = new Blob([result])
       zip.file(url.split('/').reverse()[0], blob, { base64: true })

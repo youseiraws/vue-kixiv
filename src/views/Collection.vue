@@ -3,8 +3,8 @@
     <v-tabs v-model="tab" class="collection-tabs" vertical>
       <v-tab
         class="collection-tab"
-        v-for="(collection,index) in collections"
-        :key="collection.name"
+        v-for="(collection,index) in favorites"
+        :key="collection._id"
         :href="`#${collection.name}`"
       >
         <template v-if="editCollectionSwitchs[index]">
@@ -72,7 +72,7 @@
       <v-tabs-items v-model="tab">
         <v-tab-item
           v-for="collection in totalCollections"
-          :key="collection.name"
+          :key="collection._id"
           :value="collection.name"
         >
           <container
@@ -107,6 +107,7 @@
               >
                 <template #action>
                   <v-checkbox
+                    multiple
                     class="collection-checkbox"
                     v-show="showCheckbox&&isCollectionTab"
                     v-model="checkeds"
@@ -193,7 +194,7 @@
 </template>
 
 <script>
-import { mapGetters, mapActions } from 'vuex'
+import { mapGetters, mapMutations, mapActions } from 'vuex'
 import moment from 'moment'
 import { Container, Post, Cover } from '../components'
 import { tagTypes, getTagColor, downloadImages } from '../util/util'
@@ -232,7 +233,7 @@ export default {
   },
   computed: {
     ...mapGetters('collection', [
-      'collections',
+      'favorites',
       'blacklist',
       'tagManagement',
       'categories',
@@ -240,8 +241,8 @@ export default {
     ]),
     ...mapGetters('setting', ['pageSize']),
     totalCollections() {
-      if (this.collections !== undefined && this.blacklist !== undefined)
-        return [...this.collections, this.blacklist]
+      if (this.favorites !== undefined && this.blacklist !== undefined)
+        return [...this.favorites, this.blacklist]
     },
     isCollectionTab() {
       return this.tab !== BLACKLIST && this.tab !== TAG_MANAGEMENT
@@ -311,8 +312,8 @@ export default {
       this.pagination =
         this.pagination > newCurrentLength ? newCurrentLength : this.pagination
     },
-    collections(newCollections) {
-      this.editCollectionSwitchs = new Array(newCollections.length).fill(false)
+    favorites(newFavorites) {
+      this.editCollectionSwitchs = new Array(newFavorites.length).fill(false)
     },
     checkeds(newCheckeds) {
       this.checkAll = this.unblackedPosts.every(unblackedPost =>
@@ -324,17 +325,19 @@ export default {
     tagManagement(newTagManagement) {
       this.loadCover()
     },
+    currentCollection(newCurrentCollection) {
+      this.setPosts({ tag: 'COLLECTION', posts: newCurrentCollection.posts })
+    },
   },
   methods: {
     ...mapActions('collection', {
       add: 'ADD',
       edit: 'EDIT',
       remove: 'REMOVE',
-      like: 'LIKE',
-      dislike: 'DISLIKE',
       untag: 'UNTAG',
       loadCover: 'LOAD_COVER',
     }),
+    ...mapMutations('larger', { setPosts: 'SET_POSTS' }),
     ...mapActions('larger', { openLarger: 'OPEN_LARGER' }),
     prevCollection() {
       this.pagination--
@@ -377,9 +380,7 @@ export default {
     },
     init() {
       this.addCollectionSwitch = false
-      this.editCollectionSwitchs = new Array(this.collections.length).fill(
-        false,
-      )
+      this.editCollectionSwitchs = new Array(this.favorites.length).fill(false)
       this.loadCover()
     },
     clickCheckbox() {
@@ -390,13 +391,19 @@ export default {
         )
     },
     clickPost(post) {
-      this.openLarger({ post, posts: this.currentCollection.posts })
+      this.openLarger({
+        tag: 'COLLECTION',
+        post,
+        posts: this.currentCollection.posts,
+      })
     },
     download() {
       this.showCheckbox = !this.showCheckbox
       if (!this.showCheckbox) {
         downloadImages(
-          this.checkeds.map(post => post.storage.file_url),
+          this.checkeds.map(
+            post => post.storage.crop_url || post.storage.file_url,
+          ),
           `${this.tab}_${this.checkeds.length}_${moment().format(
             dateDisplayFormat,
           )}`,

@@ -1,7 +1,7 @@
 <template>
   <div id="post-collection">
     <v-list dense>
-      <v-hover #default="{hover}" v-for="(collection,index) in collections" :key="collection.name">
+      <v-hover #default="{hover}" v-for="(collection,index) in favorites" :key="collection.name">
         <v-list-item v-if="editCollectionSwitchs[index]">
           <v-text-field
             v-model="editedCollection"
@@ -111,11 +111,11 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['collections']),
+    ...mapGetters(['favorites']),
   },
   watch: {
-    collections(newCollections) {
-      this.editCollectionSwitchs = new Array(newCollections.length).fill(false)
+    favorites(newFavorites) {
+      this.editCollectionSwitchs = new Array(newFavorites.length).fill(false)
     },
     menu(newMenu) {
       if (!newMenu) this.init()
@@ -166,7 +166,7 @@ export default {
     },
     init() {
       this.addCollectionSwitch = false
-      this.editCollectionSwitchs = new Array(this.collections.length).fill(
+      this.editCollectionSwitchs = new Array(this.favorites.length).fill(
         false,
       )
     },

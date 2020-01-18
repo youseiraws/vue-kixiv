@@ -147,7 +147,7 @@ export default {
   },
   watch: {
     total(newTotal) {
-      this.setPosts(newTotal)
+      this.setPosts({ tag: 'POPULAR', posts: newTotal })
     },
     pickerDate(newPickerDate) {
       this.menu = false
@@ -171,7 +171,12 @@ export default {
     ...mapMutations('larger', { setPosts: 'SET_POSTS' }),
     ...mapActions('larger', { openLarger: 'OPEN_LARGER' }),
     clickPost(post) {
-      this.openLarger({ post, posts: this.total, loadMore: this.prevDuration })
+      this.openLarger({
+        tag: 'POPULAR',
+        post,
+        posts: this.total,
+        loadMore: this.prevDuration,
+      })
     },
   },
   created() {

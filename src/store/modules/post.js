@@ -1,3 +1,6 @@
+import _ from 'lodash'
+import api from '../../api'
+
 const urls = ['preview_url', 'sample_url', 'jpeg_url', 'file_url']
 
 /** mutations-types **/
@@ -5,6 +8,7 @@ const ADD_POSTS = 'ADD_POSTS'
 
 /** actions-types **/
 const GET_NOT_CACHED_POSTS = 'GET_NOT_CACHED_POSTS'
+const CROP = 'CROP'
 
 const state = {
   posts: [],
@@ -46,6 +50,15 @@ const actions = {
           ...urls.map(url => ({ [url]: post[url] })),
         ),
       )
+  },
+  [CROP]: async ({ commit }, { post, crop }) => {
+    try {
+      const result = await api.post('/crop', { post, crop })
+      if (!_.isEmpty(result)) {
+        result.storage.crop_url += `?ver=${Date.now()}`
+        commit(ADD_POSTS, [result])
+      }
+    } catch {}
   },
 }
 

@@ -54,7 +54,7 @@ const getters = {
       ]),
     ),
   duration: (state, getters) => getters.popular[getters.formatedDate],
-  total: state => Object.values(getters.popular).flat(),
+  total: (state, getters) => Object.values(getters.popular).flat(),
   isLoading: state => state.isLoading,
   isDurationEmpty: (state, getters) =>
     _.isEmpty(getters.popular[getters.formatedDate]),
