@@ -9,6 +9,7 @@ const ADD_POSTS = 'ADD_POSTS'
 /** actions-types **/
 const GET_NOT_CACHED_POSTS = 'GET_NOT_CACHED_POSTS'
 const CROP = 'CROP'
+const RELOAD = 'RELOAD'
 
 const state = {
   posts: [],
@@ -21,6 +22,12 @@ const getters = {
 const mutations = {
   [ADD_POSTS]: (state, addedPosts) => {
     addedPosts.forEach(addedPost => {
+      if (_.isObject(addedPost.storage))
+        Object.keys(addedPost.storage)
+          .filter(key => key.includes('url'))
+          .forEach(url => {
+            addedPost.storage[url] += `?ver=${Date.now()}`
+          })
       const index = state.posts.findIndex(post => post.id === addedPost.id)
       if (index === -1) state.posts.push(addedPost)
       else
@@ -54,10 +61,13 @@ const actions = {
   [CROP]: async ({ commit }, { post, crop }) => {
     try {
       const result = await api.post('/crop', { post, crop })
-      if (!_.isEmpty(result)) {
-        result.storage.crop_url += `?ver=${Date.now()}`
-        commit(ADD_POSTS, [result])
-      }
+      if (!_.isEmpty(result)) commit(ADD_POSTS, [result])
+    } catch {}
+  },
+  [RELOAD]: async ({ commit }, { id, postTypes }) => {
+    try {
+      const result = await api.post('/reload', { id, postTypes })
+      if (!_.isEmpty(result)) commit(ADD_POSTS, result)
     } catch {}
   },
 }

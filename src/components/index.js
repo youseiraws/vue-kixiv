@@ -8,6 +8,7 @@ import PostBlackBtn from './PostBlackBtn'
 import PostDownloadBtn from './PostDownloadBtn'
 import PostTag from './PostTag'
 import PostHoverBtn from './PostHoverBtn'
+import PostReloadBtn from './PostReloadBtn'
 
 export {
   Container,
@@ -20,4 +21,5 @@ export {
   PostDownloadBtn,
   PostTag,
   PostHoverBtn,
+  PostReloadBtn,
 }

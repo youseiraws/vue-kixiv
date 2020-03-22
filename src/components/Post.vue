@@ -20,6 +20,7 @@
             :aspect-ratio="16/9"
             :src="getPostUrl(post,'sample')"
             :lazy-src="getPostUrl(post,'preview')"
+            @error="postError"
           >
             <slot name="action">
               <v-icon v-if="hasCollected" class="post-heart-icon pa-1" color="red">mdi-heart</v-icon>
@@ -39,6 +40,7 @@
             </v-btn>
             <post-black-btn :post="post"></post-black-btn>
             <post-download-btn :post="post"></post-download-btn>
+            <post-reload-btn :post="post" :postTypes="['preview','sample']"></post-reload-btn>
             <v-spacer></v-spacer>
             <v-btn icon @click="showTags()">
               <v-icon>mdi-tag-outline</v-icon>
@@ -69,12 +71,13 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapGetters, mapActions } from 'vuex'
 import { getPostUrl } from '../util/util'
 import PostInfo from './PostInfo'
 import PostCollection from './PostCollection'
 import PostBlackBtn from './PostBlackBtn'
 import PostDownloadBtn from './PostDownloadBtn'
+import PostReloadBtn from './PostReloadBtn'
 import PostTag from './PostTag'
 
 export default {
@@ -84,6 +87,7 @@ export default {
     PostCollection,
     PostBlackBtn,
     PostDownloadBtn,
+    PostReloadBtn,
     PostTag,
   },
   props: {
@@ -137,6 +141,7 @@ export default {
     },
   },
   methods: {
+    ...mapActions('post', { reload: 'RELOAD' }),
     getPostUrl(post, postType) {
       return getPostUrl(post, postType)
     },
@@ -151,6 +156,9 @@ export default {
     setVisibility(visible) {
       this.menu = visible
       this.openOnHover = !visible
+    },
+    postError(err) {
+      // this.reload({ id: this.post.id, postTypes: ['preview', 'sample'] })
     },
   },
 }

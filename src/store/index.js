@@ -9,6 +9,7 @@ import category from './modules/category'
 import tag from './modules/tag'
 import collection from './modules/collection'
 import setting from './modules/setting'
+import tooltip from './modules/tooltip'
 
 Vue.use(Vuex)
 
@@ -23,6 +24,7 @@ export default new Vuex.Store({
     tag,
     collection,
     setting,
+    tooltip,
   },
   strict: process.env.NODE_ENV !== 'production',
 })

@@ -21,7 +21,6 @@ const UNBLACK = 'UNBLACK'
 const TAG = 'TAG'
 const UNTAG = 'UNTAG'
 const LOAD_COVER = 'LOAD_COVER'
-const HANDLE_RESULT = 'HANDLE_RESULT'
 
 const state = {
   collections: [],
@@ -75,7 +74,7 @@ const mutations = {
 }
 
 const actions = {
-  [ADD]: async ({ dispatch }, name) => {
+  [ADD]: async ({ commit }, name) => {
     if (_.isEmpty(name)) return
     let result
     try {
@@ -83,9 +82,9 @@ const actions = {
     } catch {
       result = await api.get(`${baseUrl}/add`, { name })
     }
-    if (!_.isEmpty(result)) dispatch(HANDLE_RESULT, result)
+    if (!_.isEmpty(result)) commit(SET_COLLECTIONS, result)
   },
-  [EDIT]: async ({ dispatch }, { oldName, newName }) => {
+  [EDIT]: async ({ commit }, { oldName, newName }) => {
     if (_.isEqual(oldName, newName) || _.isEmpty(newName)) return
     let result
     try {
@@ -99,18 +98,18 @@ const actions = {
         newname: newName,
       })
     }
-    if (!_.isEmpty(result)) dispatch(HANDLE_RESULT, result)
+    if (!_.isEmpty(result)) commit(SET_COLLECTIONS, result)
   },
-  [REMOVE]: async ({ dispatch }, name) => {
+  [REMOVE]: async ({ commit }, name) => {
     let result
     try {
       result = await api.get(`${baseUrl}/remove`, { name })
     } catch {
       result = await api.get(`${baseUrl}/remove`, { name })
     }
-    if (!_.isEmpty(result)) dispatch(HANDLE_RESULT, result)
+    if (!_.isEmpty(result)) commit(SET_COLLECTIONS, result)
   },
-  [LIST]: async ({ state, commit, dispatch }) => {
+  [LIST]: async ({ state, commit }) => {
     if (state.isLoading) return
     commit(START_LOADING)
     let result
@@ -119,62 +118,69 @@ const actions = {
     } catch {
       result = await api.get(`${baseUrl}/list`)
     }
-    if (!_.isEmpty(result)) dispatch(HANDLE_RESULT, result)
+    if (!_.isEmpty(result)) {
+      commit(SET_COLLECTIONS, result)
+      commit(
+        'post/ADD_POSTS',
+        result.map(collection => collection.posts).flat(),
+        { root: true },
+      )
+    }
     commit(FINISH_LOADING)
   },
-  [LIKE]: async ({ dispatch }, { name, id }) => {
+  [LIKE]: async ({ commit }, { name, id }) => {
     let result
     try {
       result = await api.get(`${baseUrl}/like`, { name, id })
     } catch {
       result = await api.get(`${baseUrl}/like`, { name, id })
     }
-    if (!_.isEmpty(result)) dispatch(HANDLE_RESULT, result)
+    if (!_.isEmpty(result)) commit(SET_COLLECTIONS, result)
   },
-  [DISLIKE]: async ({ dispatch }, { name, id }) => {
+  [DISLIKE]: async ({ commit }, { name, id }) => {
     let result
     try {
       result = await api.get(`${baseUrl}/dislike`, { name, id })
     } catch {
       result = await api.get(`${baseUrl}/dislike`, { name, id })
     }
-    if (!_.isEmpty(result)) dispatch(HANDLE_RESULT, result)
+    if (!_.isEmpty(result)) commit(SET_COLLECTIONS, result)
   },
-  [BLACK]: async ({ dispatch }, id) => {
+  [BLACK]: async ({ commit }, id) => {
     let result
     try {
       result = await api.get(`${baseUrl}/black`, { id })
     } catch {
       result = await api.get(`${baseUrl}/black`, { id })
     }
-    if (!_.isEmpty(result)) dispatch(HANDLE_RESULT, result)
+    if (!_.isEmpty(result)) commit(SET_COLLECTIONS, result)
   },
-  [UNBLACK]: async ({ dispatch }, id) => {
+  [UNBLACK]: async ({ commit }, id) => {
     let result
     try {
       result = await api.get(`${baseUrl}/unblack`, { id })
     } catch {
       result = await api.get(`${baseUrl}/unblack`, { id })
     }
-    if (!_.isEmpty(result)) dispatch(HANDLE_RESULT, result)
+    if (!_.isEmpty(result)) commit(SET_COLLECTIONS, result)
   },
-  [TAG]: async ({ dispatch }, id) => {
+  [TAG]: async ({ commit }, id) => {
     let result
     try {
       result = await api.get(`${baseUrl}/tag`, { id })
     } catch {
       result = await api.get(`${baseUrl}/tag`, { id })
     }
-    if (!_.isEmpty(result)) dispatch(HANDLE_RESULT, result)
+    if (!_.isEmpty(result)) commit(SET_COLLECTIONS, result)
   },
-  [UNTAG]: async ({ dispatch }, id) => {
+  [UNTAG]: async ({ commit }, id) => {
     let result
     try {
       result = await api.get(`${baseUrl}/untag`, { id })
     } catch {
       result = await api.get(`${baseUrl}/untag`, { id })
     }
-    if (!_.isEmpty(result)) dispatch(HANDLE_RESULT, result)
+    if (!_.isEmpty(result)) commit(SET_COLLECTIONS, result)
   },
   [LOAD_COVER]: async ({ state, getters, commit }) => {
     if (state.isLoading) return
@@ -194,14 +200,6 @@ const actions = {
       }
     }
     commit(FINISH_LOADING)
-  },
-  [HANDLE_RESULT]: ({ commit }, result) => {
-    commit(SET_COLLECTIONS, result)
-    commit(
-      'post/ADD_POSTS',
-      result.map(collection => collection.posts).flat(),
-      { root: true },
-    )
   },
 }
 

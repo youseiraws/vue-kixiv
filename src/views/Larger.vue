@@ -34,6 +34,7 @@
                   :src="getPostUrl(post,'file')"
                   :lazy-src="getPostUrl(post,'jpeg')"
                   @click="closeLarger()"
+                  @error="postError"
                 ></v-img>
               </v-card>
             </v-carousel-item>
@@ -46,6 +47,14 @@
                 <v-btn icon large @click="isLocked=!isLocked">
                   <v-icon v-if="isLocked">mdi-lock-outline</v-icon>
                   <v-icon v-else>mdi-lock-open-outline</v-icon>
+                </v-btn>
+              </div>
+            </v-item>
+            <v-item class="larger-item">
+              <div>
+                <v-btn icon large @click="changeShuffleModel()">
+                  <v-icon v-if="shuffleModel">mdi-shuffle</v-icon>
+                  <v-icon v-else>mdi-shuffle-disabled</v-icon>
                 </v-btn>
               </div>
             </v-item>
@@ -118,6 +127,9 @@
                 </template>
               </post-hover-btn>
             </v-item>
+            <v-item class="larger-item">
+              <post-reload-btn :post="currentPost" large :postTypes="['jpeg','file']"></post-reload-btn>
+            </v-item>
             <v-spacer></v-spacer>
             <v-item v-show="isCropping" class="larger-item">
               <div>
@@ -151,6 +163,7 @@ import {
   PostDownloadBtn,
   PostTag,
   PostHoverBtn,
+  PostReloadBtn,
 } from '../components'
 
 export default {
@@ -162,6 +175,7 @@ export default {
     PostDownloadBtn,
     PostTag,
     PostHoverBtn,
+    PostReloadBtn,
   },
   data() {
     return {
@@ -171,10 +185,17 @@ export default {
       isCropping: false,
       clipperBasicSrc: '',
       isLocked: false,
+      shuffleModel: false,
     }
   },
   computed: {
-    ...mapGetters('larger', ['overlay', 'post', 'posts', 'loadMore']),
+    ...mapGetters('larger', [
+      'overlay',
+      'post',
+      'posts',
+      'loadMore',
+      'shuffle',
+    ]),
     ...mapGetters('collection', ['collections', 'blacklist']),
     ...mapGetters('setting', ['contain', 'rating', 'carouselsInterval']),
     unblackedPosts() {
@@ -225,10 +246,10 @@ export default {
       if (newIndex === -1) return
       this.indexModel = newIndex
     },
-    indexModel(newIndexModel) {
-      if (!_.isFunction(this.loadMore)) return
-      if (newIndexModel > this.count - 10) this.loadMore()
-    },
+    // indexModel(newIndexModel) {
+    //   if (!_.isFunction(this.loadMore)) return
+    //   if (newIndexModel > this.count - 10) this.loadMore()
+    // },
     async currentPost(newCurrentPost) {
       if (
         newCurrentPost === undefined ||
@@ -244,10 +265,16 @@ export default {
         .toLowerCase()
       this.clipperBasicSrc = `data:image/${ext};base64,${base64}`
     },
+    shuffle(newShuffle) {
+      this.shuffleModel = newShuffle
+    },
   },
   methods: {
-    ...mapActions('post', { crop: 'CROP' }),
-    ...mapActions('larger', { closeLarger: 'CLOSE_LARGER' }),
+    ...mapActions('post', { crop: 'CROP', reload: 'RELOAD' }),
+    ...mapActions('larger', {
+      closeLarger: 'CLOSE_LARGER',
+      changeShuffle: 'CHANGE_SHUFFLE',
+    }),
     ...mapActions('collection', {
       add: 'ADD',
       edit: 'EDIT',
@@ -263,6 +290,11 @@ export default {
     },
     changeMenu(newMenu) {
       this.menu = newMenu
+    },
+    changeShuffleModel() {
+      this.indexModel = 0
+      this.shuffleModel = !this.shuffleModel
+      this.changeShuffle(this.shuffleModel)
     },
     setVisibility(visible) {
       this.menu = visible
@@ -281,6 +313,9 @@ export default {
     },
     cancelCrop() {
       this.isCropping = false
+    },
+    postError(err) {
+      // this.reload({ id: this.currentPost.id, postTypes: ['jpeg', 'file'] })
     },
   },
 }

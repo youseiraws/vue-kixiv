@@ -73,24 +73,27 @@ async function downloadImage(url) {
   saveAs(url, url.split('/').reverse()[0])
 }
 
-async function downloadImages(urls, name) {
-  if (_.isEmpty(urls)) return
-  if (urls.length === 1) {
-    await downloadImage(urls[0])
-    return
-  }
-  const zip = new JSZip()
-  await Promise.all(
-    urls.map(async url => {
-      url = url.split('?ver=')[0]
-      const result = await api.download(url)
-      const blob = new Blob([result])
-      zip.file(url.split('/').reverse()[0], blob, { base64: true })
-    }),
-  )
-  zip
-    .generateAsync({ type: 'blob' })
-    .then(content => saveAs(content, `${name}.zip`))
+function downloadImages(urls, name) {
+  return new Promise(async resolve => {
+    if (_.isEmpty(urls)) return
+    if (urls.length === 1) {
+      await downloadImage(urls[0])
+      return
+    }
+    const zip = new JSZip()
+    await Promise.all(
+      urls.map(async url => {
+        url = url.split('?ver=')[0]
+        const result = await api.download(url)
+        const blob = new Blob([result])
+        zip.file(url.split('/').reverse()[0], blob, { base64: true })
+      }),
+    )
+    zip.generateAsync({ type: 'blob' }).then(content => {
+      saveAs(content, `${name}.zip`)
+      resolve()
+    })
+  })
 }
 
 export {

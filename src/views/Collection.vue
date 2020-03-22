@@ -339,6 +339,7 @@ export default {
     }),
     ...mapMutations('larger', { setPosts: 'SET_POSTS' }),
     ...mapActions('larger', { openLarger: 'OPEN_LARGER' }),
+    ...mapActions('tooltip', { showTip: 'SHOW_TIP' }),
     prevCollection() {
       this.pagination--
     },
@@ -397,17 +398,27 @@ export default {
         posts: this.currentCollection.posts,
       })
     },
-    download() {
+    async download() {
       this.showCheckbox = !this.showCheckbox
       if (!this.showCheckbox) {
-        downloadImages(
+        const filename = `${this.tab}_${this.checkeds.length}_${moment().format(
+          dateDisplayFormat,
+        )}`
+        this.showTip({
+          content: `${filename}正在下载中...`,
+          progress: true,
+        })
+        await downloadImages(
           this.checkeds.map(
             post => post.storage.crop_url || post.storage.file_url,
           ),
-          `${this.tab}_${this.checkeds.length}_${moment().format(
-            dateDisplayFormat,
-          )}`,
+          filename,
         )
+        this.showTip({
+          content: `${filename}下载成功`,
+          progress: false,
+          close: true,
+        })
         this.checkeds = []
       }
     },

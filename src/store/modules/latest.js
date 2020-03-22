@@ -38,7 +38,7 @@ const state = {
 
 const getters = {
   date: state => state.date,
-  latest: (state, getters, rootState,rootGetters) =>
+  latest: (state, getters, rootState, rootGetters) =>
     Object.fromEntries(
       Object.entries(state.latest).map(([key, value]) => [
         key,
@@ -142,17 +142,17 @@ const actions = {
     }
     commit(FINISH_LOADING)
   },
-  [PREV_DAILY]: async ({ commit, dispatch }) => {
+  [PREV_DAILY]: async ({ state, commit, dispatch }) => {
+    if (state.isLoading) return
     commit(SUB_DATE)
     commit(NOT_YET_CACHED)
     await dispatch(LOAD_DAILY)
   },
-  [NEXT_DAILY]: async ({ getters, commit, dispatch }) => {
-    if (getters.hasNextDaily) {
-      commit(ADD_DATE)
-      commit(NOT_YET_CACHED)
-      await dispatch(LOAD_DAILY)
-    }
+  [NEXT_DAILY]: async ({ state, getters, commit, dispatch }) => {
+    if (state.isLoading || !getters.hasNextDaily) return
+    commit(ADD_DATE)
+    commit(NOT_YET_CACHED)
+    await dispatch(LOAD_DAILY)
   },
   [REFRESH_DAILY]: async ({ state, dispatch }) => {
     if (!state.hasCached) await dispatch(LOAD_DAILY)

@@ -7,6 +7,7 @@ import Category from './Category'
 import Tag from './Tag'
 import Setting from './Setting'
 import Collection from './Collection'
+import Tooltip from './Tooltip'
 
 export {
   Home,
@@ -18,4 +19,5 @@ export {
   Tag,
   Setting,
   Collection,
+  Tooltip,
 }
